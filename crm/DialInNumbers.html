@@ -47,8 +47,8 @@
 				alert('OK');
 				$.ajax({
 					type: "GET",
-					dataType: "json",
-					url: "/AddDialInNumbersAction",
+					dataType: "jsonp",
+					url: "/AddDialInNumbersAction?callback=?",
 
 					data: { area: $('#area').val(), dialInProvider: $('#dialInProvider').val() }
 					// data: { area: "Dhaka", dialInProvider: "+880129387192" }
