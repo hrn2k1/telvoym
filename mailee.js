@@ -175,15 +175,37 @@ http.createServer(function(request, response) {
     else if(uri=="/log")
     {
         fs.readFile("../../LogFiles/Application/index.html" ,function(error,data){
-       if(error){
-           response.writeHead(404,{"Content-type":"text/plain"});
-           response.end("Sorry the page was not found"+error);
-       }else{
-           response.writeHead(202,{"Content-type":"text/html"});
-           response.end(data);
+            if(error){
+               response.writeHead(404,{"Content-type":"text/plain"});
+               response.end("Sorry the page was not found"+error);
+            }else{
+               response.writeHead(202,{"Content-type":"text/html"});
+               response.end(data);
 
-       }
-   });
+            }
+        });
+    }
+    else if(uri=="/AddDialInNumbers")
+    {
+        fs.readFile("crm/DialInNumbers.html" ,function(error,data){
+            if(error){
+               response.writeHead(404,{"Content-type":"text/plain"});
+               response.end("Sorry the page was not found"+error);
+            }else{
+               response.writeHead(202,{"Content-type":"text/html"});
+               response.end(data);
+
+            }
+        });
+    }
+    else if (uri === "/AddDialInNumbersAction") {
+        var query = url.parse(request.url).query;
+        var user = querystring.parse(query);
+        //var u=utility.Nullify(user['u']);
+        console.log(user);
+
+        dao.AddDialInNumbers(response,utility.isNull(user['area'],''),utility.isNull(user['dialInProvider'],'WebEx'));
+        
     }
     else if(RightString(uri,3)=="txt"){
          //console.log(RightString(uri,3));

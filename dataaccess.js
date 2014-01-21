@@ -265,6 +265,39 @@ function getTollNo(response,area,dialInProvider)
     });
 }
 
+
+function AddDialInNumbersAction(response,area,dialInProvider)
+{
+    var collection = db.get('DialInNumbers');
+    var entity = {
+      "Area": area,
+      "Provider": dialInProvider
+    };
+
+    // if (entity.length == 0) {
+
+    // } else {
+      
+    // }
+
+    collection.insert(entity, function(error, result) {
+        if(error)
+        {
+          utility.log("AddDialInNumbers() error: " + error,'ERROR');
+          response.setHeader("content-type", "text/plain");
+          response.write('{\"Status\":\"Error in Adding !!!\"}');
+          response.end();
+        }
+        else
+        {
+          utility.log("getTollNo() error: " + error,'ERROR');
+          response.setHeader("content-type", "text/plain");
+          response.write('{\"Status\":\"Successfully added.\"}');
+          response.end();
+        }
+    });
+}
+
 // Get user's call credit info
 // http://localhost:8080/credit?userID=harun@live.com
 // {"_id":"52d8fd70e4b04b3452b13eb3","UserID":"harun@live.com","Credit":100}

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>DialInNumbers</title>
+	<script src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
+	<script type="text/javascript">
+		ajaxTimeOut = 30000;
+		errorHtml = '<span class="red messagebox">Network Error !!!</span>';
+		loadingHtml = '<span class="messagebox">Loading...</span>';
+		ajaxMessage = '#ajaxmessage';
+		// function onClickForm(formName, actionPage, btn){
+
+		//     var formName = '#' + formName;
+		//     var btn = '#' + btn;
+		//     $(btn).click(function() {
+		//     	alert('click');
+		//         $.ajax({
+		//             type:"GET",
+		//             url:actionPage,
+		//             dataType: "json",
+		//             data:$(formName).serialize(),
+		//             timeout:ajaxTimeOut,
+		//             beforeSend:function(){
+		//             	alert('before');
+		//                 $(ajaxMessage).html(loadingHtml);
+		//                 $(btn).attr("disabled","disabled");
+		//             },
+		//             error:function(data){
+		//             	console.log(data);
+		//             	// $(ajaxMessage).html(data);
+		//                 // $(ajaxMessage).html(errorHtml);
+		//                 $(btn).removeAttr("disabled");
+		//             },
+		//             done:function(data){
+		//             	alert('done');
+		//                 // $(ajaxMessage).html(data.Status);
+		//                 $(btn).removeAttr("disabled");
+		//             }
+		//         });
+		//         alert('finish');
+		//     });
+		// }
+
+		$(document).ready(function() {
+			$("#save").click(function() {
+				alert('OK');
+				$.ajax({
+					type: "GET",
+					dataType: "json",
+					url: "/AddDialInNumbersAction",
+
+					data: { area: $('#area').val(), dialInProvider: $('#dialInProvider').val() }
+					// data: { area: "Dhaka", dialInProvider: "+880129387192" }
+					// data:$("#frm").serialize(),
+				})
+				.done(function( msg ) {
+					alert( "Data Saved: " + msg );
+				});
+			});
+
+        	// onClickForm("frm", "AddDialInNumbersAction", "save");
+    	});
+		
+
+	</script>
+</head>
+	<body>
+
+	<h1>Add DialInNumbers</h1>
+	<div id="ajaxmessage"></div>
+	<form action="javascript:;" method="get" name="frm">
+		Area: <input type="text" name="area" id="area">
+		Number: <input type="text" name="dialInProvider" id="dialInProvider">
+		<input type="submit" name="save" id="save" value="Save">
+	</form>
+	
+
+	</body>
+
+</html> 
