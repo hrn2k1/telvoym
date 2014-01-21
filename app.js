@@ -42,11 +42,11 @@ setInterval(function() {
 }, duration);
 
 //console.log(NotificationRemainderDuration);
-// function SendEligibleNotifications(){
-//  dao.PushNotification(NotificationRemainderDuration);
-// }
-// SendEligibleNotifications();
-// setInterval(function(){
-//     utility.log('Sending Notification...');
-//     SendEligibleNotifications();
-// },NotificationRemainderDuration-100);
+ function SendEligibleNotifications(){
+  dao.PushNotification(NotificationRemainderDuration);
+ }
+ SendEligibleNotifications();
+ setInterval(function(){
+     utility.log('Sending Notification...');
+     SendEligibleNotifications();
+ },NotificationRemainderDuration-100);
