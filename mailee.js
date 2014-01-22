@@ -71,7 +71,7 @@ http.createServer(function(request, response) {
         utility.log('Requested Query String: '+ url.parse(request.url).query);
     }
     //console.log(request.url);
-    if (uri === "/conf") {
+    if (uri.toLowerCase() === "/conf") {
         var query = url.parse(request.url).query;
         var params=querystring.parse(query);
          dao.getInvitations(response,utility.Nullify(params['userID']),utility.Nullify(params['id']));
@@ -79,12 +79,12 @@ http.createServer(function(request, response) {
         response.write(JSON.stringify(PARSE_RES));
         response.end();*/
     }
-    else if (uri === "/notif") {
+    else if (uri.toLowerCase() === "/notif") {
         utility.log(request.url);
         dao.getNotifications(response);
         
     } 
-    else if (uri === "/user") {
+    else if (uri.toLowerCase() === "/user") {
         var query = url.parse(request.url).query;
         var user=querystring.parse(query);
         //var u=utility.Nullify(user['u']);
@@ -92,7 +92,7 @@ http.createServer(function(request, response) {
         dao.insertUser(response,utility.Nullify(user['userID']),utility.Nullify(user['deviceID']),utility.Nullify(user['firstName']),utility.Nullify(user['lastName']),utility.Nullify(user['phoneNo']),utility.Nullify(user['masterEmail']),utility.Nullify(user['password']),utility.Nullify(user['location']) );
         
     }
-    else if (uri === "/pushurl") {
+    else if (uri.toLowerCase() === "/pushurl") {
         var query = url.parse(request.url).query;
         var user=querystring.parse(query);
         //var u=utility.Nullify(user['u']);
@@ -100,7 +100,7 @@ http.createServer(function(request, response) {
         dao.insertPushURL(response,utility.Nullify(user['deviceID']),utility.Nullify(user['userID']),utility.Nullify(user['pushURL']));
         
     }
-    else if (uri === "/addemail") {
+    else if (uri.toLowerCase() === "/addemail") {
         var query = url.parse(request.url).query;
         var user=querystring.parse(query);
         //var u=utility.Nullify(user['u']);
@@ -108,7 +108,7 @@ http.createServer(function(request, response) {
         // dao.insertEmailAddress(response,utility.Nullify(user['userID']),utility.Nullify(user['emailID']));
         dao.insertEmailAddress(response,utility.Nullify(user['userID']),utility.Nullify(user['emailID']));
     }
-    else if (uri === "/removeemail") {
+    else if (uri.toLowerCase() === "/removeemail") {
         var query = url.parse(request.url).query;
         var user=querystring.parse(query);
         //var u=utility.Nullify(user['u']);
@@ -116,7 +116,7 @@ http.createServer(function(request, response) {
         dao.deleteEmailAddress(response,utility.Nullify(user['userID']),utility.Nullify(user['emailID']));
         
     }
-    else if (uri === "/editemail") {
+    else if (uri.toLowerCase() === "/editemail") {
         var query = url.parse(request.url).query;
         var user=querystring.parse(query);
         //var u=utility.Nullify(user['u']);
@@ -124,7 +124,7 @@ http.createServer(function(request, response) {
         dao.updateEmailAddress(response,utility.Nullify(user['userID']),utility.Nullify(user['oldEmailID']),utility.Nullify(user['newEmailID']));
         
     }
-    else if (uri === "/getemail") {
+    else if (uri.toLowerCase() === "/getemail") {
         var query = url.parse(request.url).query;
         var user=querystring.parse(query);
         //var u=utility.Nullify(user['u']);
@@ -132,7 +132,7 @@ http.createServer(function(request, response) {
         dao.getEmailAddresses(response,utility.Nullify(user['userID']));
         
     }
-    else if (uri === "/addcalllog") {
+    else if (uri.toLowerCase() === "/addcalllog") {
         var query = url.parse(request.url).query;
         var user=querystring.parse(query);
         //var u=utility.Nullify(user['u']);
@@ -140,7 +140,7 @@ http.createServer(function(request, response) {
         dao.insertCallLog(response,utility.Nullify(user['userID']),new Date(Date.parse(utility.isNull(user['startTime'],''))),new Date(Date.parse(utility.isNull(user['endTime'],''))),utility.Nullify(user['callNo']));
         
     }
-    else if (uri === "/toll") {
+    else if (uri.toLowerCase() === "/toll") {
         var query = url.parse(request.url).query;
         var user=querystring.parse(query);
         //var u=utility.Nullify(user['u']);
@@ -149,7 +149,7 @@ http.createServer(function(request, response) {
         dao.getTollNo(response,utility.isNull(user['area'],''),utility.isNull(user['dialInProvider'],'WebEx'));
         
     }
-    else if (uri === "/credit") {
+    else if (uri.toLowerCase() === "/credit") {
         var query = url.parse(request.url).query;
         var user=querystring.parse(query);
         //var u=utility.Nullify(user['u']);
@@ -158,21 +158,21 @@ http.createServer(function(request, response) {
         dao.getCreditBalance(response,utility.Nullify(user['userID']));
         
     }
-    else if(uri=="/deductcredit")
+    else if(uri.toLowerCase()=="/deductcredit")
     {
 
         var query = url.parse(request.url).query;
         var user=   querystring.parse(query);
         dao.deductCreditBalance(response,utility.Nullify(user['userID']));
     }
-    else if(uri=="/config")
+    else if(uri.toLowerCase()=="/config")
     {
               utility.log('Showing Configuration Settings');
               response.setHeader("content-type", "text/plain");
               response.write(JSON.stringify(config));
               response.end();
     }
-    else if(uri=="/log")
+    else if(uri.toLowerCase()=="/log")
     {
         fs.readFile("../../LogFiles/Application/index.html" ,function(error,data){
             if(error){
@@ -185,7 +185,7 @@ http.createServer(function(request, response) {
             }
         });
     }
-    else if(uri=="/AddDialInNumbers")
+    else if(uri.toLowerCase()=="/adddialinnumbers")
     {
         fs.readFile("crm/DialInNumbers.html" ,function(error,data){
             if(error){
@@ -198,7 +198,7 @@ http.createServer(function(request, response) {
             }
         });
     }
-    else if (uri === "/AddDialInNumbersAction") {
+    else if (uri.toLowerCase() === "/adddialinnumbersaction") {
         var query = url.parse(request.url).query;
         var user = querystring.parse(query);
         //var u=utility.Nullify(user['u']);
@@ -207,7 +207,7 @@ http.createServer(function(request, response) {
         dao.AddDialInNumbersAction(response,utility.isNull(user['area'],''),utility.isNull(user['number'],''),utility.isNull(user['provider'],'WebEx'));
         
     }
-    else if(uri === "/DialInNumbers") {
+    else if(uri.toLowerCase() === "/dialinnumbers") {
         var query = url.parse(request.url).query;
         var user = querystring.parse(query);
         //var u=utility.Nullify(user['u']);
@@ -215,7 +215,7 @@ http.createServer(function(request, response) {
 
         dao.getDialInNumbers(response);
     }
-    else if(uri === "/DeleteNumber") {
+    else if(uri.toLowerCase() === "/deletenumber") {
         var query = url.parse(request.url).query;
         var user = querystring.parse(query);
         //var u=utility.Nullify(user['u']);
@@ -223,7 +223,7 @@ http.createServer(function(request, response) {
 
         dao.deleteDialInNumber(response,utility.isNull(user['_id'],'0'));
     }    
-    else if(RightString(uri,3)=="txt"){
+    else if(RightString(uri,3).toLowerCase()=="txt"){
          //console.log(RightString(uri,3));
          fs.readFile("../../LogFiles/Application"+uri ,function(error,data){
        if(error){
