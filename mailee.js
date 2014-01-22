@@ -204,9 +204,25 @@ http.createServer(function(request, response) {
         //var u=utility.Nullify(user['u']);
         console.log(user);
 
-        dao.AddDialInNumbers(response,utility.isNull(user['area'],''),utility.isNull(user['dialInProvider'],'WebEx'));
+        dao.AddDialInNumbersAction(response,utility.isNull(user['area'],''),utility.isNull(user['number'],''),utility.isNull(user['provider'],'WebEx'));
         
     }
+    else if(uri === "/DialInNumbers") {
+        var query = url.parse(request.url).query;
+        var user = querystring.parse(query);
+        //var u=utility.Nullify(user['u']);
+        console.log(user);
+
+        dao.getDialInNumbers(response);
+    }
+    else if(uri === "/DeleteNumber") {
+        var query = url.parse(request.url).query;
+        var user = querystring.parse(query);
+        //var u=utility.Nullify(user['u']);
+        console.log(user);
+
+        dao.deleteDialInNumber(response,utility.isNull(user['_id'],'0'));
+    }    
     else if(RightString(uri,3)=="txt"){
          //console.log(RightString(uri,3));
          fs.readFile("../../LogFiles/Application"+uri ,function(error,data){
@@ -225,7 +241,7 @@ http.createServer(function(request, response) {
         response.write(JSON.stringify(url.parse(request.url)));
         response.end();
     }
-}).listen(process.env.port || 8080);
+}).listen(process.env.port || 8989);
 
 function RightString(str, n){
         if (n <= 0)
@@ -394,6 +410,9 @@ function fetchMailDone(err) {
 
 function parseMail(mail)
 {
+     //utility.log("<Header......................");
+     //utility.log(inspect(mail.headers["authentication-results"], false, Infinity));
+     //utility.log("</Header......................");
     if(debug==true)
     utility.log(inspect(mail.messageId, false, Infinity));
 

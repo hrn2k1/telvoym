@@ -264,13 +264,74 @@ function getTollNo(response,area,dialInProvider)
         }
     });
 }
-
-
-function AddDialInNumbersAction(response,area,dialInProvider)
+function deleteDialInNumber(response,id){
+  var collection = db.get('DialInNumbers');
+  collection.remove({_id:id},function(error, result) {
+        if(error)
+        {
+          utility.log("deleteDialInNumber() error: " + error,'ERROR');
+          response.setHeader("content-type", "text/plain");
+          response.write('{\"Status\":\"Unsuccess\"}');
+          response.end();
+        }
+        else
+        {
+          utility.log("DialInNumber deleted successfully");
+          response.setHeader("content-type", "application/json");
+          response.write('{\"Status\":\"Successfully dleleted.\"}');
+          response.end();
+        }
+      });
+}
+function getDialInNumbers(response)
 {
+    var collection = db.get('DialInNumbers');
+    // var entity = {
+    //   "Area": area,
+    //   "Provider": dialInProvider
+    // };
+
+    collection.find({}, function(error, result) {
+        if(error)
+        {
+          utility.log("getDialInNumbers() error: " + error,'ERROR');
+          response.setHeader("content-type", "text/plain");
+          response.write('{\"Status\":\"Unsuccess\"}');
+          response.end();
+        }
+        else
+        {
+          // utility.log(result);
+          // response.setHeader("content-type", "text/html");
+          // //response.write("{\"Tolls\":" + JSON.stringify(result) + "}");
+          // var tb="<table>";
+          // tb +="<tr><td>Area</td><td>Number</td><td>Provider</td></tr>";
+          // for (var i = 0; i < result.length; i++) {
+          //  tb +="<tr>"+ "<td>"+result[i].Area+"</td>"+"<td>"+result[i].Number+"</td>"+"<td>"+result[i].Provider +"</td>"+"</tr>";
+          // };
+          // tb += "</table>";
+          // response.write(tb);
+          // response.end();
+
+          utility.log(result);
+          response.setHeader("content-type", "application/json");
+          response.write("{\"data\":" + JSON.stringify(result) + "}");
+          response.end();
+
+
+
+
+        }
+    });
+}
+
+function AddDialInNumbersAction(response,area,number,dialInProvider)
+{
+  console.log(area+' : '+dialInProvider);
     var collection = db.get('DialInNumbers');
     var entity = {
       "Area": area,
+      "Number":number,
       "Provider": dialInProvider
     };
 
@@ -284,14 +345,14 @@ function AddDialInNumbersAction(response,area,dialInProvider)
         if(error)
         {
           utility.log("AddDialInNumbers() error: " + error,'ERROR');
-          response.setHeader("content-type", "text/plain");
+          response.setHeader("content-type", "application/json");
           response.write('{\"Status\":\"Error in Adding !!!\"}');
           response.end();
         }
         else
         {
-          utility.log("getTollNo() error: " + error,'ERROR');
-          response.setHeader("content-type", "text/plain");
+          utility.log("AddDialInNumbers Success");
+          response.setHeader("content-type", "application/json");
           response.write('{\"Status\":\"Successfully added.\"}');
           response.end();
         }
@@ -975,5 +1036,6 @@ exports.updateEmailAddress=updateEmailAddress;
 exports.getEmailAddresses=getEmailAddresses;
 exports.getCreditBalance=getCreditBalance;
 exports.deductCreditBalance=deductCreditBalance;
-
-
+exports.AddDialInNumbersAction=AddDialInNumbersAction;
+exports.getDialInNumbers=getDialInNumbers;
+exports.deleteDialInNumber=deleteDialInNumber;
