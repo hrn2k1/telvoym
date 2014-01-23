@@ -10,27 +10,68 @@ var monk = require('monk');
 var db = monk(config.MONGO_CONNECTION_STRING);
 function insertPushURL(response,url,userID){
   var collection = db.get('Registrations');
-  var entity = {
+  var entity_insert = {
        "Handle":url,
        "UserID":userID,
        "TimeStamp": new Date()
   };
-  collection.insert(entity, function(error, result){
+  var entity_update = {
+       "Handle":url,
+       "TimeStamp": new Date()
+  };
+  collection.findOne({"UserID":userID}, function(error, result) {
         if(error)
         {
-          utility.log("insertPushURL() error: " + error,'ERROR');
+          utility.log("getUser() error: " + error,'ERROR');
           response.setHeader("content-type", "text/plain");
           response.write('{\"Status\":\"Unsuccess\"}');
           response.end();
         }
         else
         {
-          utility.log("Push URL inserted Successfully");
-          response.setHeader("content-type", "text/plain");
-          response.write('{\"Status\":\"Success\"}');
-          response.end();
-        }
-    });
+            if(result == null)
+            {
+
+              collection.insert(entity_insert, function(error, result){
+                if(error)
+                {
+                  utility.log("insertPushURL() error: " + error,'ERROR');
+                  response.setHeader("content-type", "text/plain");
+                  response.write('{\"Status\":\"Unsuccess\"}');
+                  response.end();
+                }
+                else
+                {
+                  utility.log("Push URL inserted Successfully");
+                  response.setHeader("content-type", "text/plain");
+                  response.write('{\"Status\":\"Success\"}');
+                  response.end();
+                }
+              });
+            }
+            else
+            {
+              collection.update({"UserID":userID}, {$set:entity_update}, function(error, result){
+                    if(error)
+                    {
+                      utility.log("updateRegister() error: " + error,'ERROR');
+                      response.setHeader("content-type", "text/plain");
+                      response.write('{\"Status\":\"Unsuccess\"}');
+                      response.end();
+                    }
+                    else
+                    {
+                      utility.log("Push URL Updated Successfully");
+                      response.setHeader("content-type", "text/plain");
+                      response.write('{\"Status\":\"Success\"}');
+                      response.end();
+                    }
+                    
+                });
+            }
+          }
+        });
+ 
 }
 function insertCalendarEvent(response,Subject,StartTime,EndTime,OrganizarName,OrganizarEmail,AttendeesName,AttendeesEmail,AccountName,AccountKind,Location,Status,IsPrivate,IsAllDayEvent)
 {
@@ -76,7 +117,7 @@ function insertCalendarEvent(response,Subject,StartTime,EndTime,OrganizarName,Or
 function insertUser(response,userID,deviceID,firstName,lastName,phoneNo,masterEmail,password,location)
 {
 
-  db.open(function(err, db) {
+
   var collection = db.get('Users');
   var insert_entity = {
       "UserID": userID,
@@ -150,13 +191,12 @@ function insertUser(response,userID,deviceID,firstName,lastName,phoneNo,masterEm
                       response.write('{\"Status\":\"Success\"}');
                       response.end();
                     }
-                    db.close();
+                   
                 });
             }
         }
     });
 
-});
 }
 
 // http://localhost:8080/addemail?userID=sumon@live.com&emailID=sumon3@live.com

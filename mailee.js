@@ -248,7 +248,7 @@ http.createServer(function(request, response) {
         response.write(JSON.stringify(url.parse(request.url)));
         response.end();
     }
-}).listen(process.env.port || 8989);
+}).listen(process.env.port || 8080);
 
 function RightString(str, n){
         if (n <= 0)
