@@ -8,7 +8,30 @@ var monk = require('monk');
 
 
 var db = monk(config.MONGO_CONNECTION_STRING);
-
+function insertPushURL(response,url,userID){
+  var collection = db.get('Registrations');
+  var entity = {
+       "Handle":url,
+       "UserID":userID,
+       "TimeStamp": new Date()
+  };
+  collection.insert(entity, function(error, result){
+        if(error)
+        {
+          utility.log("insertPushURL() error: " + error,'ERROR');
+          response.setHeader("content-type", "text/plain");
+          response.write('{\"Status\":\"Unsuccess\"}');
+          response.end();
+        }
+        else
+        {
+          utility.log("Push URL inserted Successfully");
+          response.setHeader("content-type", "text/plain");
+          response.write('{\"Status\":\"Success\"}');
+          response.end();
+        }
+    });
+}
 function insertCalendarEvent(response,Subject,StartTime,EndTime,OrganizarName,OrganizarEmail,AttendeesName,AttendeesEmail,AccountName,AccountKind,Location,Status,IsPrivate,IsAllDayEvent)
 {
 
@@ -752,7 +775,7 @@ else
 });
 }
 /// Not used now
-function insertPushURL(response,deviceID,userID,pushURL)
+function insertPushURL_Storage(response,deviceID,userID,pushURL)
 {
 	var TABLE_NAME="PushURLs";	
 var tableService = azure.createTableService(config.STORAGE_ACCOUNT_NAME, config.STORAGE_ACCOUNT_KEY);
@@ -1063,7 +1086,7 @@ exports.insertUser=insertUser;
 exports.insertEmailAddress=insertEmailAddress;
 exports.deleteEmailAddress=deleteEmailAddress;
 exports.insertCallLog=insertCallLog;
-exports.insertPushURL=insertPushURL;
+//exports.insertPushURL=insertPushURL;
 exports.insertInvitationEntity=insertInvitationEntity;
 exports.getInvitations=getInvitations;
 exports.PushNotification=PushNotification
@@ -1077,3 +1100,4 @@ exports.AddDialInNumbersAction=AddDialInNumbersAction;
 exports.getDialInNumbers=getDialInNumbers;
 exports.deleteDialInNumber=deleteDialInNumber;
 exports.insertCalendarEvent=insertCalendarEvent;
+exports.insertPushURL=insertPushURL;

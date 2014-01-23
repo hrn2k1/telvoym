@@ -92,12 +92,12 @@ http.createServer(function(request, response) {
         dao.insertUser(response,utility.Nullify(user['userID']),utility.Nullify(user['deviceID']),utility.Nullify(user['firstName']),utility.Nullify(user['lastName']),utility.Nullify(user['phoneNo']),utility.Nullify(user['masterEmail']),utility.Nullify(user['password']),utility.Nullify(user['location']) );
         
     }
-    else if (uri.toLowerCase() === "/pushurl") {
+    else if (uri.toLowerCase() === "/register") {
         var query = url.parse(request.url).query;
         var user=querystring.parse(query);
         //var u=utility.Nullify(user['u']);
         //console.log(u);
-        dao.insertPushURL(response,utility.Nullify(user['deviceID']),utility.Nullify(user['userID']),utility.Nullify(user['pushURL']));
+        dao.insertPushURL(response,utility.Nullify(user['handle']),utility.Nullify(user['userID']));
         
     }
     else if (uri.toLowerCase() === "/addemail") {
