@@ -236,6 +236,13 @@ http.createServer(function(request, response) {
        }
         });
     }
+    ///addcalendarevent?subject=meeting2&startTime=2014-01-26 15:00:00 PM&&endTime=2014-01-26 15:30:00 PM&organizarName=Imtaz&organizarEmail=imtiaz@live.com&attendeesName=rabbi,harun&attendeesEmail=rabbi@live.com,harun@live.com&accountName=harun&accountKind=public&location=dhaka&status=active&isPrivate=true&isAllDayEvent=false
+    else if (uri.toLowerCase() === "/addcalendarevent") {
+        var query = url.parse(request.url).query;
+        var params=querystring.parse(query);
+        utility.log(params);
+        dao.insertCalendarEvent(response,utility.isNull(params['subject'],'[no subject]'),utility.isNull(params['startTime'],''),utility.isNull(params['endTime'],''),utility.isNull(params['organizarName'],''),utility.isNull(params['organizarEmail'],''),utility.isNull(params['attendeesName'],''),utility.isNull(params['attendeesEmail'],''),utility.isNull(params['accountName'],''),utility.isNull(params['accountKind'],''),utility.isNull(params['location'],''),utility.isNull(params['status'],''),utility.isNull(params['isPrivate'],false),utility.isNull(params['isAllDayEvent'],false));
+    }
     else {
         response.setHeader("content-type", "text/plain");
         response.write(JSON.stringify(url.parse(request.url)));

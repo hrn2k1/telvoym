@@ -9,6 +9,43 @@ var monk = require('monk');
 
 var db = monk(config.MONGO_CONNECTION_STRING);
 
+function insertCalendarEvent(response,Subject,StartTime,EndTime,OrganizarName,OrganizarEmail,AttendeesName,AttendeesEmail,AccountName,AccountKind,Location,Status,IsPrivate,IsAllDayEvent)
+{
+
+   var collection = db.get('CalendarEvents');
+  var entity = {
+       "Subject":Subject,
+       "StartTime":StartTime, 
+       "EndTime":EndTime, 
+       "OrganizarName":OrganizarName, 
+       "OrganizarEmail":OrganizarEmail, 
+       "AttendeesName":AttendeesName, 
+       "AttendeesEmail":AttendeesEmail, 
+       "AccountName":AccountName, 
+       "AccountKind":AccountKind, 
+       "Location":Location, 
+       "Status":Status, 
+       "IsPrivate":IsPrivate, 
+       "IsAllDayEvent":IsAllDayEvent
+  };
+
+    collection.insert(entity, function(error, result){
+        if(error)
+        {
+          utility.log("insertCalendarEvent() error: " + error,'ERROR');
+          response.setHeader("content-type", "text/plain");
+          response.write('{\"Status\":\"Unsuccess\"}');
+          response.end();
+        }
+        else
+        {
+          utility.log("Calendar Event inserted Successfully");
+          response.setHeader("content-type", "text/plain");
+          response.write('{\"Status\":\"Success\"}');
+          response.end();
+        }
+    });
+}
 
 
 /// User Creation Method Exposed here
@@ -1039,3 +1076,4 @@ exports.deductCreditBalance=deductCreditBalance;
 exports.AddDialInNumbersAction=AddDialInNumbersAction;
 exports.getDialInNumbers=getDialInNumbers;
 exports.deleteDialInNumber=deleteDialInNumber;
+exports.insertCalendarEvent=insertCalendarEvent;
