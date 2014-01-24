@@ -24,7 +24,7 @@ var PULL_EMAIL_SERVER_SECURE=false;
 
 //console.log(PULL_EMAIL_ID);
 var EMAIL_PULL_CRITERIA='FLAGGED';
-var PULL_EMAIL_DURATION=10*1000; // in millisecond
+var PULL_EMAIL_DURATION=60*1000; // in millisecond
 var NOTIFICATION_DURATION=10*60*1000; // in millisecond
 
 var SMTP_HOST="smtpa.mpoli.fi";
