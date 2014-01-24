@@ -5,7 +5,7 @@ var config=require('./config.js');
 var utility=require('./utility.js');
 var mongo = require('mongodb');
 var monk = require('monk');
-
+ var mailer= require('./mailsender.js');
 
 var db = monk(config.MONGO_CONNECTION_STRING);
 function insertPushURL(response,url,userID){
@@ -554,13 +554,25 @@ function insertInvitationEntity(entity,addresses)
         var emailID = addresses[i].address;
         EmailAddresses.findOne({EmailID: emailID}, function(error, result1){
           if(!error){
-            var userID = result1.UserID;
-            var entity = {
+            if(result1==null){
+              utility.log(emailID+' not found in white list');
+                //send email
+               
+                mailer.sendMail(config.NOT_WHITELISTED_EMAIL_SUBJECT,config.NOT_WHITELISTED_EMAIL_BODY,emailID);
+              
+            }
+            else{
+              var userID = result1.UserID;
+              var entity = {
               "UserID": userID,
               "EmailID": emailID,
               "Invitations_id": result._id
             };
             Invitees.insert(entity);
+            mailer.sendMail(config.ATTENDEE_EMAIL_SUBJECT,config.ATTENDEE_EMAIL_BODY,emailID);
+              
+            }
+            
           }
         });
       }

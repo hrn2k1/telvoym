@@ -7,7 +7,7 @@ var MONGO_CONNECTION_STRING = "mongodb://Telvoy_MongoDb:ZFj.UBl7MvdIsyR4AVOFQVWX
 
 
 
-
+//Imap server
 var PULL_EMAIL_ID ="confme@ext.movial.com";
 var PULL_EMAIL_PASS="aivohyiey0iePh";
 var PULL_EMAIL_SERVER="imap.gmail.com";
@@ -24,8 +24,8 @@ var PULL_EMAIL_SERVER_SECURE=false;
 
 //console.log(PULL_EMAIL_ID);
 var EMAIL_PULL_CRITERIA='FLAGGED';
-var PULL_EMAIL_DURATION=60*1000;
-var NOTIFICATION_DURATION=60*1000;
+var PULL_EMAIL_DURATION=10*1000; // in millisecond
+var NOTIFICATION_DURATION=10*60*1000; // in millisecond
 
 var SMTP_HOST="smtpa.mpoli.fi";
 var SMTP_PORT=465;
@@ -36,6 +36,8 @@ var MAIL_SENT_FROM="info@telvoy.com"
 
 var NOT_WHITELISTED_EMAIL_SUBJECT='Telvoy Email Notification';
 var NOT_WHITELISTED_EMAIL_BODY='Your Mail ID is not found in white list. please registered.';
+var ATTENDEE_EMAIL_SUBJECT='Your Meeting Schedule is Parsed Successfully';
+var ATTENDEE_EMAIL_BODY='Your Meeting Schedule is Parsed Successfully';
 
 
 exports.IS_DEBUG_MODE=IS_DEBUG_MODE;
@@ -58,5 +60,7 @@ exports.SMTP_PASS=SMTP_PASS;
 exports.MAIL_SENT_FROM=MAIL_SENT_FROM;
 exports.NOT_WHITELISTED_EMAIL_SUBJECT=NOT_WHITELISTED_EMAIL_SUBJECT;
 exports.NOT_WHITELISTED_EMAIL_BODY=NOT_WHITELISTED_EMAIL_BODY;
+exports.ATTENDEE_EMAIL_SUBJECT=ATTENDEE_EMAIL_SUBJECT;
+exports.ATTENDEE_EMAIL_BODY=ATTENDEE_EMAIL_BODY;
 
 exports.MONGO_CONNECTION_STRING = MONGO_CONNECTION_STRING;

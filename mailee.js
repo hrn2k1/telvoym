@@ -329,7 +329,7 @@ function fetchMailProcess(fetch) {
             var addressStr = out['to']; //'jack@smart.com, "Development, Business" <bizdev@smart.com>';
             var addresses = mimelib.parseAddresses(addressStr);
             utility.log('No. of Attendees :'+ addresses.length);
-            utility.log('Starting Invitation Save into sql database...');
+            utility.log('Starting Invitation Save into mongodb database...');
             var emailsto='';
         if(addresses.length>0)
          {
@@ -457,11 +457,13 @@ function parseBody(mail)
     if (mail.text) {
         utility.log('##### fallback to parsing text BODY ######');
         out = parseString(mail.text, ':', '\n', true, false);
+         //console.log(out);
         //out["body"] = mail.text;
     } else if (mail.html) {
         utility.log('##### fallback to parsing html BODY ######');
         var text = mail.html.replace(/<\/?([a-z][a-z0-9]*)\b[^>]*>?|&nbsp;/gi, '');
         out = parseString(text, ':', '\n', true, false);
+        //console.log(out);
         //out["body"] = mail.html;
     } else {
         return null;
@@ -577,7 +579,7 @@ function parseString(str, delimiter, endMarker, allowFuzzy, usePattern)
     [
         {
             keyword: 'toll', // TODO: rename to 'phone'
-            alts: 'toll|bridge|dial-in',
+            alts: 'toll|bridge|dial-in|dial',
             pattern: '[0-9\\-+]+',
             fuzzy: true,
         },
@@ -639,7 +641,10 @@ function parseString(str, delimiter, endMarker, allowFuzzy, usePattern)
                             '\\s*(' + (usePattern ? dict[i].pattern : '.+') + ')' + endMarker, 'i');
         var match = str.match(re);
         if (match && match.length > 0) {
-            out[dict[i].keyword] = match[1];
+            if(match[1] !=null)
+                out[dict[i].keyword] = match[1].trim();
+            else
+                out[dict[i].keyword]=null;
         }
     }
 
