@@ -982,7 +982,7 @@ function PushNotification(notificationRemainderTime)
   var Invitations = db.get('Invitations');
   var Invitees = db.get('Invitees');
   var Registrations = db.get('Registrations');
-  var sttime = addMinutes(new Date(), -99999999);
+  var sttime = new Date(); //addMinutes(new Date(), -99999999);
   //console.log(sttime);
   var edtime = addMinutes(new Date(), notificationRemainderTime/(1000*60));
   //console.log(edtime);
