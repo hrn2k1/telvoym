@@ -81,16 +81,16 @@ http.createServer(function(request, response) {
         response.write(JSON.stringify(PARSE_RES));
         response.end();*/
     }
-     else if (uri.toLowerCase() === "/confm") {
-        var query = url.parse(request.url).query;
-        var params=querystring.parse(query);
-         // dao.getInvitations(response,utility.Nullify(params['userID']),utility.Nullify(params['id']));
-         //var da = require('mongotest.js');
-         dao.mongotestm(response,utility.Nullify(params['userID']),utility.Nullify(params['id']));
-        /*response.setHeader("content-type", "text/plain");
-        response.write(JSON.stringify(PARSE_RES));
-        response.end();*/
-    }
+    //  else if (uri.toLowerCase() === "/confm") {
+    //     var query = url.parse(request.url).query;
+    //     var params=querystring.parse(query);
+    //      // dao.getInvitations(response,utility.Nullify(params['userID']),utility.Nullify(params['id']));
+    //      //var da = require('mongotest.js');
+    //      dao.mongotestm(response,utility.Nullify(params['userID']),utility.Nullify(params['id']));
+    //     /*response.setHeader("content-type", "text/plain");
+    //     response.write(JSON.stringify(PARSE_RES));
+    //     response.end();*/
+    // }
     else if (uri.toLowerCase() === "/notif") {
         utility.log(request.url);
         dao.getNotifications(response);
@@ -262,14 +262,14 @@ http.createServer(function(request, response) {
         var query = url.parse(request.url).query;
         var params=querystring.parse(query);
         utility.log(params);
-        dao.insertCalendarEvent(response,utility.isNull(params['subject'],'[no subject]'),utility.isNull(params['startTime'],''),utility.isNull(params['endTime'],''),utility.isNull(params['organizarName'],''),utility.isNull(params['organizarEmail'],''),utility.isNull(params['attendeesName'],''),utility.isNull(params['attendeesEmail'],''),utility.isNull(params['accountName'],''),utility.isNull(params['accountKind'],''),utility.isNull(params['location'],''),utility.isNull(params['status'],''),utility.isNull(params['isPrivate'],false),utility.isNull(params['isAllDayEvent'],false));
+        dao.insertCalendarEvent(response,utility.isNull(params['subject'],'[no subject]'),utility.isNull(params['details'],''),utility.isNull(params['startTime'],''),utility.isNull(params['endTime'],''),utility.isNull(params['organizarName'],''),utility.isNull(params['organizarEmail'],''),utility.isNull(params['attendeesName'],''),utility.isNull(params['attendeesEmail'],''),utility.isNull(params['accountName'],''),utility.isNull(params['accountKind'],''),utility.isNull(params['location'],''),utility.isNull(params['status'],''),utility.isNull(params['isPrivate'],false),utility.isNull(params['isAllDayEvent'],false));
     }
     else {
         response.setHeader("content-type", "text/plain");
         response.write(JSON.stringify(url.parse(request.url)));
         response.end();
     }
-}).listen(process.env.port || 8080);
+}).listen(process.env.port || 8989);
 
 function RightString(str, n){
         if (n <= 0)

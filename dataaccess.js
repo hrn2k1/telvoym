@@ -11,15 +11,15 @@ var monk = require('monk');
 var db = monk(config.MONGO_CONNECTION_STRING);
 
 
-
 function setRemainder(response,userID,remainder){
-  var collection = db.get('Registrations');
+ 
   
  var entity_update = {
    "RemainderMinute": remainder,
    "TimeStamp": new Date()
  };
-
+mongo.MongoClient.connect(config.MONGO_CONNECTION_STRING, function(err, connection) {
+   var collection = connection.collection('Registrations');
  collection.update({"UserID":userID}, {$set:entity_update}, function(error, result){
         if(error)
         {
@@ -27,6 +27,7 @@ function setRemainder(response,userID,remainder){
           response.setHeader("content-type", "text/plain");
           response.write('{\"Status\":\"Unsuccess\"}');
           response.end();
+          connection.close();
         }
         else
         {
@@ -34,12 +35,15 @@ function setRemainder(response,userID,remainder){
           response.setHeader("content-type", "text/plain");
           response.write('{\"Status\":\"Success\"}');
           response.end();
+          connection.close();
         }
         
       });
+});
 }
+
 function insertPushURL(response,url,userID){
-  var collection = db.get('Registrations');
+  
   var entity_insert = {
    "Handle":url,
    "UserID":userID,
@@ -50,6 +54,8 @@ function insertPushURL(response,url,userID){
    "Handle":url,
    "TimeStamp": new Date()
  };
+ mongo.MongoClient.connect(config.MONGO_CONNECTION_STRING, function(err, connection) {
+  var collection = connection.collection('Registrations');
  collection.findOne({"UserID":userID}, function(error, result) {
   if(error)
   {
@@ -57,6 +63,7 @@ function insertPushURL(response,url,userID){
     response.setHeader("content-type", "text/plain");
     response.write('{\"Status\":\"Unsuccess\"}');
     response.end();
+    connection.close();
   }
   else
   {
@@ -70,6 +77,7 @@ function insertPushURL(response,url,userID){
           response.setHeader("content-type", "text/plain");
           response.write('{\"Status\":\"Unsuccess\"}');
           response.end();
+          connection.close();
         }
         else
         {
@@ -77,6 +85,7 @@ function insertPushURL(response,url,userID){
           response.setHeader("content-type", "text/plain");
           response.write('{\"Status\":\"Success\"}');
           response.end();
+          connection.close();
         }
       });
     }
@@ -89,6 +98,7 @@ function insertPushURL(response,url,userID){
           response.setHeader("content-type", "text/plain");
           response.write('{\"Status\":\"Unsuccess\"}');
           response.end();
+          connection.close();
         }
         else
         {
@@ -96,20 +106,23 @@ function insertPushURL(response,url,userID){
           response.setHeader("content-type", "text/plain");
           response.write('{\"Status\":\"Success\"}');
           response.end();
+          connection.close();
         }
         
       });
     }
   }
 });
-
+});
 }
-function insertCalendarEvent(response,Subject,StartTime,EndTime,OrganizarName,OrganizarEmail,AttendeesName,AttendeesEmail,AccountName,AccountKind,Location,Status,IsPrivate,IsAllDayEvent)
+
+function insertCalendarEvent(response,Subject,Details,StartTime,EndTime,OrganizarName,OrganizarEmail,AttendeesName,AttendeesEmail,AccountName,AccountKind,Location,Status,IsPrivate,IsAllDayEvent)
 {
 
- var collection = db.get('CalendarEvents');
+
  var entity = {
    "Subject":Subject,
+   "Details": Details,
    "StartTime":StartTime, 
    "EndTime":EndTime, 
    "OrganizarName":OrganizarName, 
@@ -123,7 +136,8 @@ function insertCalendarEvent(response,Subject,StartTime,EndTime,OrganizarName,Or
    "IsPrivate":IsPrivate, 
    "IsAllDayEvent":IsAllDayEvent
  };
-
+mongo.MongoClient.connect(config.MONGO_CONNECTION_STRING, function(err, connection) {
+  var collection = connection.collection('CalendarEvents'); 
  collection.insert(entity, function(error, result){
   if(error)
   {
@@ -131,6 +145,7 @@ function insertCalendarEvent(response,Subject,StartTime,EndTime,OrganizarName,Or
     response.setHeader("content-type", "text/plain");
     response.write('{\"Status\":\"Unsuccess\"}');
     response.end();
+    connection.close();
   }
   else
   {
@@ -138,7 +153,9 @@ function insertCalendarEvent(response,Subject,StartTime,EndTime,OrganizarName,Or
     response.setHeader("content-type", "text/plain");
     response.write('{\"Status\":\"Success\"}');
     response.end();
+    connection.close();
   }
+});
 });
 }
 
@@ -149,7 +166,7 @@ function insertUser(response,userID,deviceID,firstName,lastName,phoneNo,masterEm
 {
 
 
-  var collection = db.get('Users');
+ 
   var insert_entity = {
     "UserID": userID,
     "DeviceID": deviceID,
@@ -176,6 +193,8 @@ function insertUser(response,userID,deviceID,firstName,lastName,phoneNo,masterEm
 
   utility.log('User object to add');
   utility.log(insert_entity);
+  mongo.MongoClient.connect(config.MONGO_CONNECTION_STRING, function(err, connection) {
+  var collection = connection.collection('Users');
   collection.findOne({"UserID":userID}, function(error, result) {
     if(error)
     {
@@ -183,6 +202,7 @@ function insertUser(response,userID,deviceID,firstName,lastName,phoneNo,masterEm
       response.setHeader("content-type", "text/plain");
       response.write('{\"Status\":\"Unsuccess\"}');
       response.end();
+      connection.close();
     }
     else
     {
@@ -195,6 +215,7 @@ function insertUser(response,userID,deviceID,firstName,lastName,phoneNo,masterEm
             response.setHeader("content-type", "text/plain");
             response.write('{\"Status\":\"Unsuccess\"}');
             response.end();
+            connection.close();
           }
           else
           {
@@ -202,6 +223,7 @@ function insertUser(response,userID,deviceID,firstName,lastName,phoneNo,masterEm
             response.setHeader("content-type", "text/plain");
             response.write('{\"Status\":\"Success\"}');
             response.end();
+            connection.close();
           }
         });
       }
@@ -214,6 +236,7 @@ function insertUser(response,userID,deviceID,firstName,lastName,phoneNo,masterEm
           response.setHeader("content-type", "text/plain");
           response.write('{\"Status\":\"Unsuccess\"}');
           response.end();
+          connection.close();
         }
         else
         {
@@ -221,25 +244,27 @@ function insertUser(response,userID,deviceID,firstName,lastName,phoneNo,masterEm
           response.setHeader("content-type", "text/plain");
           response.write('{\"Status\":\"Success\"}');
           response.end();
+          connection.close();
         }
         
       });
      }
    }
  });
-
+});
 }
 
 // http://localhost:8080/addemail?userID=sumon@live.com&emailID=sumon3@live.com
 //// Add method to add User's Other Emails 
 function insertEmailAddress(response,userID,emailID)
 {
-  var collection = db.get('EmailAddresses');
+ 
   var entity = {
     "UserID": userID,
     "EmailID": emailID
   };
-
+mongo.MongoClient.connect(config.MONGO_CONNECTION_STRING, function(err, connection) {
+ var collection = connection.collection('EmailAddresses');
   collection.insert(entity, function(error, result){
     if(error)
     {
@@ -247,6 +272,7 @@ function insertEmailAddress(response,userID,emailID)
       response.setHeader("content-type", "text/plain");
       response.write('{\"Status\":\"Unsuccess\"}');
       response.end();
+      connection.close();
     }
     else
     {
@@ -254,8 +280,10 @@ function insertEmailAddress(response,userID,emailID)
       response.setHeader("content-type", "text/plain");
       response.write('{\"Status\":\"Success\"}');
       response.end();
+      connection.close();
     }
   });
+});
 }
 
 
@@ -263,11 +291,13 @@ function insertEmailAddress(response,userID,emailID)
 //// Remove method to remove User's Other Emails
 function deleteEmailAddress(response,userID,emailID)
 {
-  var collection = db.get('EmailAddresses');
+  
   var entity = {
     "UserID": userID,
     "EmailID": emailID
   };
+  mongo.MongoClient.connect(config.MONGO_CONNECTION_STRING, function(err, connection) {
+  var collection = connection.collection('EmailAddresses');
   collection.remove(entity, function(error, result){
     if(error)
     {
@@ -275,6 +305,7 @@ function deleteEmailAddress(response,userID,emailID)
       response.setHeader("content-type", "text/plain");
       response.write('{\"Status\":\"Unsuccess\"}');
       response.end();
+      connection.close();
     }
     else
     {
@@ -282,17 +313,21 @@ function deleteEmailAddress(response,userID,emailID)
       response.setHeader("content-type", "text/plain");
       response.write('{\"Status\":\"Success\"}');
       response.end();
+      connection.close();
     }
   });
+});
 }
 
 // http://localhost:8080/editemail?userID=sumon@live.com&oldEmailID=sumon4@live.com&newEmailID=sumon3@live.com
 function updateEmailAddress(response,userID,oldEmailID,newEmailID)
 {
-  var collection = db.get('EmailAddresses');
+  
   var entity = {
     "EmailID": newEmailID
   };
+   mongo.MongoClient.connect(config.MONGO_CONNECTION_STRING, function(err, connection) {
+  var collection = connection.collection('EmailAddresses');
   collection.update({"UserID":userID,"EmailID":oldEmailID}, {$set:entity}, function(error,result){
     if(error)
     {
@@ -300,6 +335,7 @@ function updateEmailAddress(response,userID,oldEmailID,newEmailID)
       response.setHeader("content-type", "text/plain");
       response.write('{\"Status\":\"Unsuccess\"}');
       response.end();
+      connection.close();
     }
     else
     {
@@ -307,24 +343,29 @@ function updateEmailAddress(response,userID,oldEmailID,newEmailID)
       response.setHeader("content-type", "text/plain");
       response.write('{\"Status\":\"Success\"}');
       response.end();
+      connection.close();
     }
   });
+});
 }
 
 // http://localhost:8080/getemail?userID=sumon@live.com
 function getEmailAddresses(response,userID)
 {
-  var collection = db.get('EmailAddresses');
+  
   var entity = {
     "UserID":userID
   };
-  collection.find(entity, function(error,result){
+  mongo.MongoClient.connect(config.MONGO_CONNECTION_STRING, function(err, connection) {
+    var collection = connection.collection('EmailAddresses');
+  collection.find(entity).toArray(function(error,result){
     if(error)
     {
       utility.log("getEmail() error: " + error,'ERROR');
       response.setHeader("content-type", "text/plain");
       response.write('{\"Status\":\"UnSuccess\"}');
       response.end();
+      connection.close();
     }
     else
     {
@@ -332,22 +373,25 @@ function getEmailAddresses(response,userID)
       response.setHeader("content-type", "text/plain");
       response.write("{\"Emails\":" + JSON.stringify(result) + "}");
       response.end();
+      connection.close();
     }
   });
+});
 }
 
 // http://localhost:8080/addcalllog?userID=harun@live.com&startTime=2013-12-31%2016:00:00&endTime=2013-12-31%2016:10:00&callNo=+8801816745951
 /// User Call Log History
 function insertCallLog(response,userID,startTime,endTime,callNo)
 {
-  var collection = db.get('CallLog');
+  
   var entity = {
     "UserID": userID,
     "StartTime": startTime,
     "EndTime": endTime,
     "CallNo": callNo
   };
-
+mongo.MongoClient.connect(config.MONGO_CONNECTION_STRING, function(err, connection) {
+  var collection = connection.collection('CallLog');
   collection.insert(entity ,function(error,result){
     if(error)
     {
@@ -355,6 +399,7 @@ function insertCallLog(response,userID,startTime,endTime,callNo)
       response.setHeader("content-type", "text/plain");
       response.write('{\"Status\":\"Unsuccess\"}');
       response.end();
+      connection.close();
     }
     else
     {
@@ -362,8 +407,10 @@ function insertCallLog(response,userID,startTime,endTime,callNo)
       response.setHeader("content-type", "text/plain");
       response.write('{\"Status\":\"Success\"}');
       response.end();
+      connection.close();
     }
   });
+});
 }
 
 /// Mapping Dial In 
@@ -372,12 +419,13 @@ function insertCallLog(response,userID,startTime,endTime,callNo)
 
 function getTollNo(response,area,dialInProvider)
 {
-  var collection = db.get('DialInNumbers');
+  
   var entity = {
     "Area": area,
     "Provider": dialInProvider
   };
-
+mongo.MongoClient.connect(config.MONGO_CONNECTION_STRING, function(err, connection) {
+  var collection = connection.collection('DialInNumbers');
   collection.findOne(entity, function(error, result) {
     if(error)
     {
@@ -385,6 +433,7 @@ function getTollNo(response,area,dialInProvider)
       response.setHeader("content-type", "text/plain");
       response.write('{\"Status\":\"Unsuccess\"}');
       response.end();
+      connection.close();
     }
     else
     {
@@ -392,11 +441,14 @@ function getTollNo(response,area,dialInProvider)
       response.setHeader("content-type", "text/plain");
       response.write("{\"Tolls\":" + JSON.stringify(result) + "}");
       response.end();
+      connection.close();
     }
   });
+});
 }
 function deleteDialInNumber(response,id){
-  var collection = db.get('DialInNumbers');
+  mongo.MongoClient.connect(config.MONGO_CONNECTION_STRING, function(err, connection) {
+  var collection = connection.collection('DialInNumbers');
   collection.remove({_id:id},function(error, result) {
     if(error)
     {
@@ -404,6 +456,7 @@ function deleteDialInNumber(response,id){
       response.setHeader("content-type", "text/plain");
       response.write('{\"Status\":\"Unsuccess\"}');
       response.end();
+      connection.close();
     }
     else
     {
@@ -411,24 +464,28 @@ function deleteDialInNumber(response,id){
       response.setHeader("content-type", "application/json");
       response.write('{\"Status\":\"Successfully dleleted.\"}');
       response.end();
+      connection.close();
     }
   });
+});
 }
 function getDialInNumbers(response)
 {
-  var collection = db.get('DialInNumbers');
+  mongo.MongoClient.connect(config.MONGO_CONNECTION_STRING, function(err, connection) {
+  var collection = connection.collection('DialInNumbers');
     // var entity = {
     //   "Area": area,
     //   "Provider": dialInProvider
     // };
 
-    collection.find({}, function(error, result) {
+    collection.find({}).toArray( function(error, result) {
       if(error)
       {
         utility.log("getDialInNumbers() error: " + error,'ERROR');
         response.setHeader("content-type", "text/plain");
         response.write('{\"Status\":\"Unsuccess\"}');
         response.end();
+        connection.close();
       }
       else
       {
@@ -448,18 +505,20 @@ function getDialInNumbers(response)
           response.setHeader("content-type", "application/json");
           response.write("{\"data\":" + JSON.stringify(result) + "}");
           response.end();
+          connection.close();
 
 
 
 
         }
       });
+});
 }
 
 function AddDialInNumbersAction(response,area,number,dialInProvider)
 {
-  console.log(area+' : '+dialInProvider);
-  var collection = db.get('DialInNumbers');
+  //console.log(area+' : '+dialInProvider);
+ 
   var entity = {
     "Area": area,
     "Number":number,
@@ -471,7 +530,8 @@ function AddDialInNumbersAction(response,area,number,dialInProvider)
     // } else {
 
     // }
-
+mongo.MongoClient.connect(config.MONGO_CONNECTION_STRING, function(err, connection) {
+   var collection = connection.collection('DialInNumbers');
     collection.insert(entity, function(error, result) {
       if(error)
       {
@@ -479,6 +539,7 @@ function AddDialInNumbersAction(response,area,number,dialInProvider)
         response.setHeader("content-type", "application/json");
         response.write('{\"Status\":\"Error in Adding !!!\"}');
         response.end();
+        connection.close();
       }
       else
       {
@@ -486,8 +547,10 @@ function AddDialInNumbersAction(response,area,number,dialInProvider)
         response.setHeader("content-type", "application/json");
         response.write('{\"Status\":\"Successfully added.\"}');
         response.end();
+        connection.close();
       }
     });
+  });
   }
 
 // Get user's call credit info
@@ -496,11 +559,12 @@ function AddDialInNumbersAction(response,area,number,dialInProvider)
 
 function getCreditBalance(response,userID)
 {
-  var collection = db.get('UserCredits');
+ 
   var entity = {
     "UserID": userID,
   };
-
+mongo.MongoClient.connect(config.MONGO_CONNECTION_STRING, function(err, connection) {
+   var collection = connection.collection('UserCredits');
   collection.findOne(entity, function(error, result) {
     if(error)
     {
@@ -508,6 +572,7 @@ function getCreditBalance(response,userID)
       response.setHeader("content-type", "text/plain");
       response.write('{\"Status\":\"Unsuccess\"}');
       response.end();
+      connection.close();
     }
     else
     {
@@ -515,11 +580,17 @@ function getCreditBalance(response,userID)
       response.setHeader("content-type", "text/plain");
       response.write(JSON.stringify(result));
       response.end();
+      connection.close();
     }
   });
+});
 }
+function deductCreditBalance(response,userID){
+    utility.log('Deduct credit balance for '+userID);
 
-function mongotestm(response,userID,id){
+
+}
+function getInvitations(response,userID,id){
 
   if( userID == null ) userID = 'sumon@live.com';
   if( id == null ) id = 0;
@@ -536,6 +607,7 @@ function mongotestm(response,userID,id){
         response.setHeader("content-type", "text/plain");
         response.write('{\"Status\":\"Unsuccess\"}');
         response.end();
+        connection.close();
       }
       else
       {
@@ -574,65 +646,20 @@ function mongotestm(response,userID,id){
   });
 }
 
-// http://localhost:8080/conf?userID=harun@movial.com
-/// method to get latest invitation from Mobile set
-function getInvitations(response,userID,id)
-{
-  if( userID == null ) userID = 'jari.ala-ruona@movial.com';
-  if( id == null ) id = 0;
-
-  var Invitations = db.get('Invitations');
-  var Invitees = db.get('Invitees');
-
-  Invitees.find({ UserID: userID},
-    function (error, result) {
-     if(error)
-     {
-      utility.log("Invitees find error: " + error,'ERROR');
-      response.setHeader("content-type", "text/plain");
-      response.write('{\"Status\":\"Unsuccess\"}');
-      response.end();
-    }
-    else
-    {
-      console.log(result);
-      var Invitations_ids = [];
-      for (var i = 0; i < result.length; i++) {
-        Invitations_ids.push(result[i].Invitations_id);
-      };
-      
-      Invitations.find({ _id: { $in : Invitations_ids}},
-        function (error, result) {
-         if(error)
-         {
-          utility.log("Invitations find error: " + error,'ERROR');
-          response.setHeader("content-type", "text/plain");
-          response.write('{\"Status\":\"Unsuccess\"}');
-          response.end();
-        }
-        else
-        {
-          utility.log(result);
-          response.setHeader("content-type", "text/plain");
-          response.write("{\"invitations\":"+JSON.stringify(result)+"}");
-          response.end();
-        }
-      });
-    }
-  });
-}
 
 
 function insertInvitationEntity(entity,addresses)
 {
-  var Invitations = db.get('Invitations');
-  var Invitees = db.get('Invitees');
-  var EmailAddresses = db.get('EmailAddresses');
+   mongo.MongoClient.connect(config.MONGO_CONNECTION_STRING, function(err, connection) {
+  var Invitations = connection.collection('Invitations');
+  var Invitees = connection.collection('Invitees');
+  var EmailAddresses = connection.collection('EmailAddresses');
 
   Invitations.insert(entity, function(error, result) {
     if(error)
     {
       utility.log("insertInvitationEntity() error: " + error, 'ERROR');
+      connection.close();
     }
     else
     {
@@ -645,7 +672,7 @@ function insertInvitationEntity(entity,addresses)
                 //send email
                
                 mailer.sendMail(config.NOT_WHITELISTED_EMAIL_SUBJECT,config.NOT_WHITELISTED_EMAIL_BODY,emailID);
-              
+              connection.close();
             }
             else{
               var userID = result1.UserID;
@@ -654,8 +681,18 @@ function insertInvitationEntity(entity,addresses)
               "EmailID": emailID,
               "Invitations_id": result._id
             };
-            Invitees.insert(entity);
-            mailer.sendMail(config.ATTENDEE_EMAIL_SUBJECT,config.ATTENDEE_EMAIL_BODY,emailID);
+            Invitees.insert(entity,function(e,r){
+              if(e){
+                 utility.log("insert Invitee error: " + e, 'ERROR');
+                 connection.close();
+              }
+              else
+              {
+               mailer.sendMail(config.ATTENDEE_EMAIL_SUBJECT,config.ATTENDEE_EMAIL_BODY,emailID);
+               connection.close();
+             }
+            });
+           
               
             }
             
@@ -666,390 +703,10 @@ function insertInvitationEntity(entity,addresses)
     }
 
   });
-}
-
-/// User Creation Method Exposed here
-function insertUser_SQL(response,userID,deviceID,firstName,lastName,phoneNo,masterEmail,password,location)
-{
-
-var insertUserinfo = edge.func('sql', function () {/*
-INSERT INTO dbo.Users(UserID,DeviceID,FirstName,LastName,PhoneNo,MasterEmail,Password,Location,RegistrationTime,IsBlackListed)
-VALUES(@UserID,@DeviceID,@FirstName,@LastName,@PhoneNo,@MasterEmail,@Password,@Location,GETDATE(),0);
-*/});
- var getUser = edge.func('sql',function(){/*
-    SELECT * FROM dbo.Users WHERE UserID=@UserID;
-  */});
-
-var updateUser = edge.func('sql',function(){/*
-UPDATE dbo.Users SET DeviceID=@DeviceID,FirstName=@FirstName,LastName=@LastName,PhoneNo=@PhoneNo,MasterEmail=@MasterEmail,Password=@Password,Location=@Location WHERE UserID=@UserID;
-*/});
-  // var entity = {
-  //       UserID : userID,
-  //       DeviceID: deviceID,
-  //       FirstName : firstName,
-  //       LastName : lastName,
-  //       PhoneNo : phoneNo,
-  //       MasterEmail : masterEmail,
-  //       Password : '',
-  //       Location : location
-  
-  //   };
-
-
-
-  var entity = {
-    "UserID": userID,
-    "DeviceID": deviceID,
-    "FirstName": firstName,
-    "LastName": lastName,
-    "PhoneNo": phoneNo,
-    "MasterEmail": masterEmail,
-    "Password": "",
-    "Location": location,
-    "RegistrationTime": new Date(),
-    "IsBlackListed": false
-  };
-
-
-  utility.log('User object to add');
-  utility.log(entity);
-  getUser({UserID:userID},function(error,result){
-    if(error)
-    {
-      utility.log("getUser() error: "+error,'ERROR');
-      response.setHeader("content-type", "text/plain");
-      response.write('{\"Status\":\"Unsuccess\"}');
-      response.end();
-    }
-    else
-    {
-      if(result.length==0)
-      {
-        insertUserinfo(entity,function(error,result){
-          if(error)
-          {
-            utility.log("insertUser() error: "+error,'ERROR');
-            response.setHeader("content-type", "text/plain");
-            response.write('{\"Status\":\"Unsuccess\"}');
-            response.end();
-          }
-          else
-          {
-            utility.log("Invitation inserted Successfully");
-            response.setHeader("content-type", "text/plain");
-            response.write('{\"Status\":\"Success\"}');
-            response.end();
-          }
-        });
-      }
-      else
-      {
-        updateUser(entity,function(error,result){
-          if(error)
-          {
-            utility.log("updateUser() error: "+error,'ERROR');
-            response.setHeader("content-type", "text/plain");
-            response.write('{\"Status\":\"Unsuccess\"}');
-            response.end();
-          }
-          else
-          {
-            utility.log("User updated Successfully");
-            response.setHeader("content-type", "text/plain");
-            response.write('{\"Status\":\"Success\"}');
-            response.end();
-          }
-        });
-      }
-    }
-  });
-
-
-
-}
-
-//// Add method to add User's Other Emails 
-function insertEmailAddress_SQl(response,userID,emailID)
-{
-  utility.log('Adding Email Address');
-    var addEmail=edge.func('sql',function(){/*
-     INSERT INTO dbo.EmailAddresses(UserID,EmailAddress,isBlocked) VALUES(@UserID,@EmailAddress,0);
-   */});
-    var mail={UserID:userID,EmailAddress:emailID};
-    utility.log(mail);
-    addEmail(mail,function(error,result){
-      if(error)
-      {
-        utility.log("insertEmail() error: "+error,'ERROR');
-        response.setHeader("content-type", "text/plain");
-        response.write('{\"Status\":\"Unsuccess\"}');
-        response.end();
-      }
-      else
-      {
-        utility.log("EmailAddress inserted Successfully");
-        response.setHeader("content-type", "text/plain");
-        response.write('{\"Status\":\"Success\"}');
-        response.end();
-      }
-    });
-  }
-  function deleteEmailAddress_SQL(response,userID,emailID)
-  {
-    var delEmail=edge.func('sql',function(){/*
-     DELETE FROM EmailAddresses WHERE UserID=@UserID AND EmailAddress=@EmailAddress;
-   */});
-    delEmail({UserID:userID,EmailAddress:emailID},function(error,result){
-      if(error)
-      {
-        utility.log("deleteEmail() error: "+error,'ERROR');
-        response.setHeader("content-type", "text/plain");
-        response.write('{\"Status\":\"Unsuccess\"}');
-        response.end();
-      }
-      else
-      {
-        utility.log("EmailAddress deleted Successfully");
-        response.setHeader("content-type", "text/plain");
-        response.write('{\"Status\":\"Success\"}');
-        response.end();
-      }
-    });
-  }
-  function updateEmailAddress_SQL(response,userID,oldEmailID,newEmailID)
-  {
-    var editEmail=edge.func('sql',function(){/*
-     UPDATE EmailAddresses SET EmailAddress=@NewEmailID  WHERE UserID=@UserID AND EmailAddress=@OldEmailID;
-   */});
-    editEmail({UserID:userID,OldEmailID:oldEmailID,NewEmailID:newEmailID},function(error,result){
-      if(error)
-      {
-        utility.log("updateEmail() error: "+error,'ERROR');
-        response.setHeader("content-type", "text/plain");
-        response.write('{\"Status\":\"Unsuccess\"}');
-        response.end();
-      }
-      else
-      {
-        utility.log("EmailAddress updated Successfully");
-        response.setHeader("content-type", "text/plain");
-        response.write('{\"Status\":\"Success\"}');
-        response.end();
-      }
-    });
-  }
-
-  function getEmailAddresses_SQL(response,userID)
-  {
-    var getEmail=edge.func('sql',function(){/*
-     SELECT * FROM  EmailAddresses WHERE UserID=@UserID;
-   */});
-    getEmail({UserID:userID},function(error,result){
-      if(error)
-      {
-        utility.log("updateEmail() error: "+error,'ERROR');
-        response.setHeader("content-type", "text/plain");
-        response.write('{\"Status\":\"UnSuccess\"}');
-        response.end();
-      }
-      else
-      {
-        utility.log("EmailAddress updated Successfully");
-        response.setHeader("content-type", "text/plain");
-        response.write("{\"Emails\":"+JSON.stringify(result)+"}");
-        response.end();
-      }
-    });
-  }
-
-/// User Call Log History
-function insertCallLog_SQL(response,userID,startTime,endTime,callNo)
-{
-    var addCallLog=edge.func('sql',function(){/*
-     INSERT INTO CallLog(TimeStamp,UserID,StartTime,EndTime,CallNo) VALUES(GETDATE(),@UserID,@StartTime,@EndTime,@CallNo);
-   */});
-    addCallLog({UserID:userID,StartTime:startTime,EndTime:endTime,CallNo:callNo},function(error,result){
-      if(error)
-      {
-        utility.log("insertCallLog() error: "+error,'ERROR');
-        response.setHeader("content-type", "text/plain");
-        response.write('{\"Status\":\"Unsuccess\"}');
-        response.end();
-      }
-      else
-      {
-        utility.log("CallLog inserted Successfully");
-        response.setHeader("content-type", "text/plain");
-        response.write('{\"Status\":\"Success\"}');
-        response.end();
-      }
-    });
-  }
-/// Mapping Dial In 
-function getTollNo_SQL(response,area,dialInProvider)
-{
- var getToll = edge.func('sql', function () {/*
-    SELECT * FROM DialInNumbers WHERE Area=@Area AND Provider=@Provider;
-  */});
- 
- getToll({Area:area,Provider:dialInProvider},function(error,result){
-  if(error)
-  {
-    utility.log("GetDialToll() error: "+error,'ERROR');
-    
-    var invites = {"Status":"Unsuccess"};
-    response.setHeader("content-type", "text/plain");
-    response.write(JSON.stringify(invites));
-    response.end();
-  }
-  else
-  {
-    utility.log(result);
-        //return JSON.stringify(result);
-        response.setHeader("content-type", "text/plain");
-        response.write("{\"Tolls\":"+JSON.stringify(result)+"}");
-        response.end();
-      }
-    });
-}
-/// Not used now
-function insertPushURL_Storage(response,deviceID,userID,pushURL)
-{
-	var TABLE_NAME="PushURLs";	
-  var tableService = azure.createTableService(config.STORAGE_ACCOUNT_NAME, config.STORAGE_ACCOUNT_KEY);
-  tableService.createTableIfNotExists(TABLE_NAME, function(error) {
-    if (error) {
-      utility.log('insertPushURL() error: ' + error,'ERROR');
-            //request.respond(statusCodes.BAD_REQUEST, error);
-            
-            response.setHeader("content-type", "text/plain");
-            response.write('Error : ' + error);
-            response.end();
-          }
-          else
-          {
-            response.setHeader("content-type", "text/plain");
-            response.write('Success');
-            response.end();
-          }
-        });
-
-
-  var entity = {
-    PartitionKey : 'default',
-    RowKey : utility.generateUid(),
-    UserID : userID,
-    DeviceID: deviceID,
-    PushURL : pushURL,
-    IsActive : true
-  };
-
-  tableService.insertEntity(TABLE_NAME, entity, function(error) {
-    if (error) {
-      console.error('insertPushURL() error: ' + error);
-            //request.respond(statusCodes.BAD_REQUEST, error);
-            return 'Error : ' + error;
-          }
-        });
-
-  return 'Success';
-}
-
-
-/// Method to Add an invitation to database after parsing invitation email
-
-function insertInvitationEntity_SQL(entity,addresses){
-    var insertInvite = edge.func('sql', function () {/*
-    INSERT INTO Invitations(ToEmails,FromEmail,InvDate,InvTime,Subject,Toll,PIN,AccessCode,Password,DialInProvider,TimeStamp,Agenda,MessageID) 
-    VALUES(@ToEmails,@FromEmail,@InvDate,@InvTime,@Subject,@Toll,@PIN,@AccessCode,@Password,@DialInProvider,GETDATE(),@Agenda,@MessageID);
-
-  */});
-
-var getMaxInvID = edge.func('sql', function () {/*
-    SELECT ISNULL(MAX(ID),0) AS MXID FROM Invitations;
-
-  */});
-var insertInvitee = edge.func('sql', function () {/*
-    INSERT INTO Invitees(UserID,EmailID,InvID) VALUES(@UserID,@EmailID,@InvID);
-
-  */});
-
-var getUserIDByEmail=edge.func('sql',function(){/*
-SELECT u.UserID,a.Emailaddress FROM users u LEFT JOIN emailaddresses a ON u.UserID=a.UserID
-WHERE  u.UserID=RTRIM(LTRIM(@Email)) OR a.emailaddress=RTRIM(LTRIM(@Email))
-*/});
-
-insertInvite(entity,function(error,result){
-  if(error)
-  {
-    utility.log("insertInvitation() error: "+error,'ERROR');
-    return -1;
-  }
-  else
-  {
-    utility.log("Invitation inserted Successfully");
-    getMaxInvID(null,function(error,result){
-      if(error)
-      {
-        utility.log("insertInvitation() error: "+error,'ERROR');
-        return -1;
-      }
-      else
-      {
-
-        var MxInvID=result[0].MXID;
-        utility.log("Max Invitation ID  retrieved Successfully, ID: "+MxInvID);
-        for (var i =0; i<addresses.length; i++) {
-
-          var emailID=addresses[i].address;
-          getUserIDByEmail({Email:emailID},function(error,result){
-            if(error)
-            {
-              utility.log("getUserIDByEmail() error: "+error,'ERROR');
-              return -1;
-            }
-            else
-            {
-              //console.log('loggggggggggg '+result.length);
-              if(result.length==0)
-              {
-
-                utility.log(emailID+' not found in white list');
-                //send email
-                var mailer= require('./mailsender.js');
-                mailer.sendMail(config.NOT_WHITELISTED_EMAIL_SUBJECT,config.NOT_WHITELISTED_EMAIL_BODY,emailID);
-              }
-              else
-              {
-                utility.log('UserID '+result[0].UserID+' found for '+emailID);
-                attendee={UserID:result[0].UserID,EmailID:emailID,InvID:MxInvID};
-
-                insertInvitee(attendee,function(error,result){
-                  if(error)
-                  {
-                    utility.log("insertInvitee() error: "+error,'ERROR');
-                    return -1;
-                  }
-                  else
-                  {
-                    utility.log("Invitee inserted Successfully");
-                    return result;
-                  }
-                });
-              }
-            }
-          });
-
-
-}
-utility.log('End Invitation Save into sql database');
-
-}
 });
 }
-});
 
-}
+
 
 
 function addMinutes(date, minutes) {
@@ -1060,14 +717,12 @@ function addMinutes(date, minutes) {
 /// Method to send/push notification to MPNS
 function PushNotification(notificationRemainderTime)
 {
-    // SELECT [Subject],Agenda,a.UserID,EmailID,Handle AS PushURL
-  // FROM [dbo].[Invitations] i INNER JOIN dbo.Invitees a ON i.ID=a.InvID
-  // INNER JOIN telvoy.Registrations r ON a.UserID=r.UserID
-  // WHERE datediff(minute, GETDATE(), InvTime) between -6999 and 10
 
-  var Invitations = db.get('Invitations');
-  var Invitees = db.get('Invitees');
-  var Registrations = db.get('Registrations');
+mongo.MongoClient.connect(config.MONGO_CONNECTION_STRING, function(err, connection) {
+
+  var Invitations = connection.collection('Invitations');
+  var Invitees = connection.collection('Invitees');
+  var Registrations = connection.collection('Registrations');
   var sttime = new Date(); //addMinutes(new Date(), -99999999);
   //console.log(sttime);
   var edtime = addMinutes(new Date(), notificationRemainderTime/(1000*60));
@@ -1079,10 +734,11 @@ function PushNotification(notificationRemainderTime)
     }
   }
 
-  Invitations.find(invtime, function(error, invites) {
+  Invitations.find(invtime).toArray( function(error, invites) {
     if(error)
     {
       utility.log("find Invitations error: " + error, 'ERROR');
+      connection.close();
     }
     else
     {
@@ -1094,10 +750,11 @@ function PushNotification(notificationRemainderTime)
         pushInfo["Agenda"] = invites[i].Agenda;
 
           // Invitations_ids.push(invites[i]._id);
-          Invitees.find({Invitations_id: invites[i]._id}, function(error, invitees) {
+          Invitees.find({Invitations_id: invites[i]._id}).toArray( function(error, invitees) {
             if(error)
             {
               utility.log("find Invitees error: " + error, 'ERROR');
+              connection.close();
             }
             else
             {
@@ -1110,6 +767,7 @@ function PushNotification(notificationRemainderTime)
                   if(error)
                   {
                     utility.log("find registration error: " + error, 'ERROR');
+                    connection.close();
                   }
                   else
                   {
@@ -1126,7 +784,7 @@ function PushNotification(notificationRemainderTime)
                                 'backContent': pushInfo["Agenda"]
                                 };
                     mpns.sendTile(pushInfo["PushUrl"], tileObj, function(){utility.log('Pushed to ' + pushInfo["UserID"]);});
-                  
+                    connection.close();
                     } 
                     // else {
                     //   pushInfo["PushUrl"] =null;
@@ -1152,69 +810,10 @@ function PushNotification(notificationRemainderTime)
 
 
 
-
-
-}
-function PushNotification_SQL(notificationRemainderTime)
-{
-      var getNotif=edge.func('sql',function(){/*
-       SELECT [Subject],Agenda,a.UserID,EmailID,Handle AS PushURL
-        FROM [dbo].[Invitations] i INNER JOIN dbo.Invitees a ON i.ID=a.InvID
-        INNER JOIN telvoy.Registrations r ON 1=1  WHERE datediff(minute,GETDATE(),InvTime) between  0 and  @NotifTime
-    */})
-
-getNotif({NotifTime:notificationRemainderTime},function(error,result){
-if(error)
-{
-    utility.log("PushNotification() error: "+error,'ERROR');
-    return "Error: "+error;
-}
-else
-{
-    utility.log("Total Eligible getNotifications: "+result.length);
-    for(var i=0;i<result.length;i++){
-
-        var tileObj={
-            'title': result[i].Subject,
-            'backTitle': "Next Conference",
-            'backBackgroundImage': "/Assets/Tiles/BackTileBackground.png",
-            'backContent': result[i].Agenda,
-        };
-        mpns.sendTile(result[i].PushURL,tileObj,function(){utility.log('Pushed OK');});
-    }
-}
 });
-}
-/// method to get latest invitation from Mobile set
-function getInvitations_SQL(response,userID,id)
-{
-  if(userID==null) userID='jari.ala-ruona@movial.com';
-  if(id==null) id=0;
 
-     var getInviteByUserID = edge.func('sql', function () {/*
-    SELECT i.*,a.UserID,a.EmailID FROM dbo.Invitations i INNER JOIN dbo.Invitees a ON i.ID=a.InvID WHERE a.UserID=@UserID AND i.ID>@ID ORDER BY TimeStamp DESC;
-  */});
-     
-     getInviteByUserID({UserID:userID,ID:id},function(error,result){
-      if(error)
-      {
-        utility.log("GetInvitation() error: "+error,'ERROR');
-        
-        var invites = {"Status":"Unsuccess"};
-        response.setHeader("content-type", "text/plain");
-        response.write(JSON.stringify(invites));
-        response.end();
-      }
-      else
-      {
-        utility.log(result);
-        //return JSON.stringify(result);
-        response.setHeader("content-type", "text/plain");
-        response.write("{\"invitations\":"+JSON.stringify(result)+"}");
-        response.end();
-      }
-    });
-   }
+}
+
 
 //// Not used now.
 function getNotifications(response)
@@ -1251,72 +850,7 @@ function getNotifications(response)
    });
     
   }
-////
-function getCreditBalance_SQL(response,userID){
-  utility.log('Getiing credit balance for '+userID);
-  var getCreditBal = edge.func('sql', function () {/*
-    SELECT * FROM UserCredits WHERE UserID=@UserID;
-  */});
-    /*response.setHeader("content-type", "text/plain");
-    response.write("{\"Credit\":10}");
-    response.end();
-    utility.log('balance: 10');*/
 
-    getCreditBal({UserID:userID},function(error,result){
-      if(error)
-      {
-        utility.log("GetCredit() error: "+error,'ERROR');
-        
-        var obj = {"Status":"Unsuccess"};
-        response.setHeader("content-type", "text/plain");
-        response.write(JSON.stringify(obj));
-        response.end();
-      }
-      else
-      {
-        utility.log(result);
-        if(result.length==0)
-        {
-          response.setHeader("content-type", "text/plain");
-          response.write("{\"ID\":0,\"UserID\":\""+userID+"\",\"Credit\":0}");
-          response.end();
-        }
-        else
-        {
-              //return JSON.stringify(result);
-              response.setHeader("content-type", "text/plain");
-              response.write(JSON.stringify(result[0]));
-              response.end();
-            }
-          }
-        });
-  }
-  function deductCreditBalance(response,userID){
-    utility.log('Deduct credit balance for '+userID);
-  var deductCreditBal = edge.func('sql', function () {/*
-    UPDATE UserCredits SET Credit=Credit-1 WHERE UserID=@UserID AND Credit>0;
-  */});
-  
-  deductCreditBal({UserID:userID},function(error,result){
-    if(error)
-    {
-      utility.log("DeductCredit() error: "+error,'ERROR');
-      
-      var obj = {"Status":"Unsuccess"};
-      response.setHeader("content-type", "text/plain");
-      response.write(JSON.stringify(obj));
-      response.end();
-    }
-    else
-    {
-     utility.log("UserCredits Deducted Successfully");
-     response.setHeader("content-type", "text/plain");
-     response.write('{\"Status\":\"Success\"}');
-     response.end();
-     
-   }
- });
-}
 //////////////////////////////
 
 
@@ -1341,4 +875,4 @@ exports.deleteDialInNumber=deleteDialInNumber;
 exports.insertCalendarEvent=insertCalendarEvent;
 exports.insertPushURL=insertPushURL;
 exports.setRemainder=setRemainder;
-exports.mongotestm=mongotestm;
+//exports.mongotestm=mongotestm;
