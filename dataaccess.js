@@ -530,7 +530,7 @@ function getInvitations(response,userID,id)
     function (error, result) {
      if(error)
      {
-      utility.log("error: " + error,'ERROR');
+      utility.log("Invitees find error: " + error,'ERROR');
       response.setHeader("content-type", "text/plain");
       response.write('{\"Status\":\"Unsuccess\"}');
       response.end();
@@ -546,7 +546,7 @@ function getInvitations(response,userID,id)
         function (error, result) {
          if(error)
          {
-          utility.log("error: " + error,'ERROR');
+          utility.log("Invitations find error: " + error,'ERROR');
           response.setHeader("content-type", "text/plain");
           response.write('{\"Status\":\"Unsuccess\"}');
           response.end();
