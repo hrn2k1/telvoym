@@ -521,58 +521,55 @@ function getCreditBalance(response,userID)
 
 function mongotestm(response,userID,id){
 
-  if( userID == null ) userID = 'jari.ala-ruona@movial.com';
+  if( userID == null ) userID = 'sumon@live.com';
   if( id == null ) id = 0;
+//console.log(config.MONGO_CONNECTION_STRING);
+  mongo.MongoClient.connect(config.MONGO_CONNECTION_STRING, function(err, connection) {
+    var Invitations = connection.collection('Invitations');
+    var Invitees = connection.collection('Invitees');
 
-  MongoClient.connect(config.MONGO_CONNECTION_STRING, function(err, db) {
-    if(err) console.log(err);
-    // Create a collection
-    db.createCollection('Invitees', function(err, Invitees) {
-      // Execute aggregate, notice the pipeline is expressed as an Array
-      if(err) console.log(err);
-      Invitees.find({ UserID: userID},
-        function (error, result) {
-         if(error)
-         {
-          utility.log("Invitees find error: " + error,'ERROR');
+    Invitees.find({ UserID: userID}).toArray(
+    function (error, result) {
+      if(error)
+      {
+        utility.log("Invitees find error: " + error,'ERROR');
+        response.setHeader("content-type", "text/plain");
+        response.write('{\"Status\":\"Unsuccess\"}');
+        response.end();
+      }
+      else
+      {
+        console.log(result);
+        /////
+
+          var Invitations_ids = [];
+          for (var i = 0; i < result.length; i++) {
+          Invitations_ids.push(result[i].Invitations_id);
+          };
+
+          Invitations.find({ _id: { $in : Invitations_ids}}).toArray(
+          function (error, result) {
+          if(error)
+          {
+          utility.log("Invitations find error: " + error,'ERROR');
           response.setHeader("content-type", "text/plain");
           response.write('{\"Status\":\"Unsuccess\"}');
           response.end();
-        }
-        else
-        {
-          // utility.log(result);
-          // response.setHeader("content-type", "text/plain");
-          // response.write(JSON.stringify(result));
-          // response.end();
-            var Invitations_ids = [];
-            for (var i = 0; i < result.length; i++) {
-            Invitations_ids.push(result[i].Invitations_id);
-            };
-           db.createCollection('Invitations', function(err, Invitations) {
-                Invitations.find({ _id: { $in : Invitations_ids}},
-                function (error, result) {
-                if(error)
-                {
-                utility.log("Invitations find error: " + error,'ERROR');
-                response.setHeader("content-type", "text/plain");
-                response.write('{\"Status\":\"Unsuccess\"}');
-                response.end();
-                }
-                else
-                {
-                utility.log(result);
-                response.setHeader("content-type", "text/plain");
-                 response.write("{\"invitations\":"+JSON.stringify(result)+"}");
-                response.end();
-                }
-                db.close();
-                });
-           });
-            
-        }
-        
-      });
+          connection.close();
+          }
+          else
+          {
+          utility.log(result);
+          response.setHeader("content-type", "text/plain");
+          response.write("{\"invitations\":"+JSON.stringify(result)+"}");
+          response.end();
+          connection.close();
+          }
+
+          });
+
+        /////
+      }
     });
   });
 }
@@ -598,6 +595,7 @@ function getInvitations(response,userID,id)
     }
     else
     {
+      console.log(result);
       var Invitations_ids = [];
       for (var i = 0; i < result.length; i++) {
         Invitations_ids.push(result[i].Invitations_id);

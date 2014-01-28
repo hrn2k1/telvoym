@@ -74,7 +74,19 @@ http.createServer(function(request, response) {
     if (uri.toLowerCase() === "/conf") {
         var query = url.parse(request.url).query;
         var params=querystring.parse(query);
-         dao.getInvitations(response,utility.Nullify(params['userID']),utility.Nullify(params['id']));
+          dao.getInvitations(response,utility.Nullify(params['userID']),utility.Nullify(params['id']));
+         //var da = require('mongotest.js');
+         //dao.mongotestm(response,utility.Nullify(params['userID']),utility.Nullify(params['id']));
+        /*response.setHeader("content-type", "text/plain");
+        response.write(JSON.stringify(PARSE_RES));
+        response.end();*/
+    }
+     else if (uri.toLowerCase() === "/confm") {
+        var query = url.parse(request.url).query;
+        var params=querystring.parse(query);
+         // dao.getInvitations(response,utility.Nullify(params['userID']),utility.Nullify(params['id']));
+         //var da = require('mongotest.js');
+         dao.mongotestm(response,utility.Nullify(params['userID']),utility.Nullify(params['id']));
         /*response.setHeader("content-type", "text/plain");
         response.write(JSON.stringify(PARSE_RES));
         response.end();*/
