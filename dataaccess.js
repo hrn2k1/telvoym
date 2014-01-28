@@ -4,10 +4,14 @@ var edge = require('edge');
 var config=require('./config.js');
 var utility=require('./utility.js');
 var mongo = require('mongodb');
+var MongoClient = require('mongodb').MongoClient;
 var monk = require('monk');
  var mailer= require('./mailsender.js');
 
 var db = monk(config.MONGO_CONNECTION_STRING);
+
+
+
 function setRemainder(response,userID,remainder){
   var collection = db.get('Registrations');
   
@@ -515,6 +519,63 @@ function getCreditBalance(response,userID)
   });
 }
 
+function mongotestm(response,userID,id){
+
+  if( userID == null ) userID = 'jari.ala-ruona@movial.com';
+  if( id == null ) id = 0;
+
+  MongoClient.connect(config.MONGO_CONNECTION_STRING, function(err, db) {
+    if(err) console.log(err);
+    // Create a collection
+    db.createCollection('Invitees', function(err, Invitees) {
+      // Execute aggregate, notice the pipeline is expressed as an Array
+      if(err) console.log(err);
+      Invitees.find({ UserID: userID},
+        function (error, result) {
+         if(error)
+         {
+          utility.log("Invitees find error: " + error,'ERROR');
+          response.setHeader("content-type", "text/plain");
+          response.write('{\"Status\":\"Unsuccess\"}');
+          response.end();
+        }
+        else
+        {
+          // utility.log(result);
+          // response.setHeader("content-type", "text/plain");
+          // response.write(JSON.stringify(result));
+          // response.end();
+            var Invitations_ids = [];
+            for (var i = 0; i < result.length; i++) {
+            Invitations_ids.push(result[i].Invitations_id);
+            };
+           db.createCollection('Invitations', function(err, Invitations) {
+                Invitations.find({ _id: { $in : Invitations_ids}},
+                function (error, result) {
+                if(error)
+                {
+                utility.log("Invitations find error: " + error,'ERROR');
+                response.setHeader("content-type", "text/plain");
+                response.write('{\"Status\":\"Unsuccess\"}');
+                response.end();
+                }
+                else
+                {
+                utility.log(result);
+                response.setHeader("content-type", "text/plain");
+                 response.write("{\"invitations\":"+JSON.stringify(result)+"}");
+                response.end();
+                }
+                db.close();
+                });
+           });
+            
+        }
+        
+      });
+    });
+  });
+}
 
 // http://localhost:8080/conf?userID=harun@movial.com
 /// method to get latest invitation from Mobile set
@@ -555,7 +616,7 @@ function getInvitations(response,userID,id)
         {
           utility.log(result);
           response.setHeader("content-type", "text/plain");
-          response.write(JSON.stringify(result));
+          response.write("{\"invitations\":"+JSON.stringify(result)+"}");
           response.end();
         }
       });
@@ -1282,3 +1343,4 @@ exports.deleteDialInNumber=deleteDialInNumber;
 exports.insertCalendarEvent=insertCalendarEvent;
 exports.insertPushURL=insertPushURL;
 exports.setRemainder=setRemainder;
+exports.mongotestm=mongotestm;
