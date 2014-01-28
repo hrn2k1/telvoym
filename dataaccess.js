@@ -8,11 +8,38 @@ var monk = require('monk');
  var mailer= require('./mailsender.js');
 
 var db = monk(config.MONGO_CONNECTION_STRING);
+function setRemainder(response,userID,remainder){
+  var collection = db.get('Registrations');
+  
+ var entity_update = {
+   "RemainderMinute": remainder,
+   "TimeStamp": new Date()
+ };
+
+ collection.update({"UserID":userID}, {$set:entity_update}, function(error, result){
+        if(error)
+        {
+          utility.log("setRemainder() error: " + error,'ERROR');
+          response.setHeader("content-type", "text/plain");
+          response.write('{\"Status\":\"Unsuccess\"}');
+          response.end();
+        }
+        else
+        {
+          utility.log("Set Remainder Successfully");
+          response.setHeader("content-type", "text/plain");
+          response.write('{\"Status\":\"Success\"}');
+          response.end();
+        }
+        
+      });
+}
 function insertPushURL(response,url,userID){
   var collection = db.get('Registrations');
   var entity_insert = {
    "Handle":url,
    "UserID":userID,
+   "RemainderMinute": 10,
    "TimeStamp": new Date()
  };
  var entity_update = {
@@ -1254,3 +1281,4 @@ exports.getDialInNumbers=getDialInNumbers;
 exports.deleteDialInNumber=deleteDialInNumber;
 exports.insertCalendarEvent=insertCalendarEvent;
 exports.insertPushURL=insertPushURL;
+exports.setRemainder=setRemainder;
