@@ -439,7 +439,7 @@ mongo.MongoClient.connect(config.MONGO_CONNECTION_STRING, function(err, connecti
     {
       utility.log(result);
       response.setHeader("content-type", "text/plain");
-      response.write("{\"Tolls\":" + JSON.stringify(result) + "}");
+      response.write(JSON.stringify(result));
       response.end();
       connection.close();
     }
