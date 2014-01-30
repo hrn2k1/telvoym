@@ -1,6 +1,6 @@
 var config = require('./config.js');
 var utility=require('./utility.js');
-
+var debug = config.IS_DEBUG_MODE;
 var nodemailer = require("nodemailer");
 function sendMail(subject,msg,recipients)
 {
@@ -18,8 +18,10 @@ function sendMail(subject,msg,recipients)
 
 
         var smtpTransport = nodemailer.createTransport("SMTP",smtp);
+        if(debug==true){
 		utility.log('SMTP Setting');
 		utility.log(smtp);
+	}
 		utility.log('Sending Result/Error');
 		// setup e-mail data with unicode symbols
 		var mailOptions = {

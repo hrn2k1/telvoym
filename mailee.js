@@ -20,6 +20,7 @@ var dao=require('./dataaccess.js');
 var mimelib = require("mimelib-noiconv");
 var utility=require('./utility.js');
 var querystring = require("querystring");
+var parser=require('./parser.js');
 
 var debug = config.IS_DEBUG_MODE;
 var markSeen = true;
@@ -221,9 +222,10 @@ http.createServer(function(request, response) {
     }
     else if (uri.toLowerCase() === "/adddialinnumbersaction") {
         var query = url.parse(request.url).query;
+       
         var user = querystring.parse(query);
         //var u=utility.Nullify(user['u']);
-        console.log(user);
+        
 
         dao.AddDialInNumbersAction(response,utility.isNull(user['area'],''),utility.isNull(user['number'],''),utility.isNull(user['provider'],'WebEx'));
         
@@ -259,17 +261,35 @@ http.createServer(function(request, response) {
     }
     ///addcalendarevent?subject=meeting2&startTime=2014-01-26 15:00:00 PM&&endTime=2014-01-26 15:30:00 PM&organizarName=Imtaz&organizarEmail=imtiaz@live.com&attendeesName=rabbi,harun&attendeesEmail=rabbi@live.com,harun@live.com&accountName=harun&accountKind=public&location=dhaka&status=active&isPrivate=true&isAllDayEvent=false
     else if (uri.toLowerCase() === "/addcalendarevent") {
-        var query = url.parse(request.url).query;
-        var params=querystring.parse(query);
-        utility.log(params);
-        dao.insertCalendarEvent(response,utility.isNull(params['subject'],'[no subject]'),utility.isNull(params['details'],''),utility.isNull(params['startTime'],''),utility.isNull(params['endTime'],''),utility.isNull(params['organizarName'],''),utility.isNull(params['organizarEmail'],''),utility.isNull(params['attendeesName'],''),utility.isNull(params['attendeesEmail'],''),utility.isNull(params['accountName'],''),utility.isNull(params['accountKind'],''),utility.isNull(params['location'],''),utility.isNull(params['status'],''),utility.isNull(params['isPrivate'],false),utility.isNull(params['isAllDayEvent'],false));
-    }
+        // var query = url.parse(request.url).query;
+        // var params=querystring.parse(query);
+        // utility.log(params);
+
+         var requestBody = '';
+            request.on('data', function(data) {
+              requestBody += data;
+              if(requestBody.length > 1e7) {
+                response.end('');
+              }
+            });
+
+            request.on('end', function() {
+                var formData = querystring.parse(requestBody);
+                console.log('form post data');
+                console.log(formData);
+                dao.insertCalendarEvent(response,utility.isNull(formData['subject'],'[no subject]'),utility.isNull(formData['details'],''),utility.isNull(formData['startTime'],''),utility.isNull(formData['endTime'],''),utility.isNull(formData['organizarName'],''),utility.isNull(formData['organizarEmail'],''),utility.isNull(formData['attendeesName'],''),utility.isNull(formData['attendeesEmail'],''),utility.isNull(formData['accountName'],''),utility.isNull(formData['accountKind'],''),utility.isNull(formData['location'],''),utility.isNull(formData['status'],''),utility.isNull(formData['isPrivate'],false),utility.isNull(formData['isAllDayEvent'],false));
+   
+            });
+
+
+
+        }
     else {
         response.setHeader("content-type", "text/plain");
         response.write(JSON.stringify(url.parse(request.url)));
         response.end();
     }
-}).listen(process.env.port || 8989);
+}).listen(process.env.port || 8080);
 
 function RightString(str, n){
         if (n <= 0)
@@ -341,13 +361,17 @@ function fetchMailProcess(fetch) {
         mailParser = new MailParser();
 
         mailParser.on('end', function(mail) {
-            var out = parseMail(mail);
+            var out = parser.parseMail(mail);
             if (!out)
+            {
+                utility.log('Cannot Parse mail');
                 return;
+            }
+                
 
             out['fetch'] = "success";
             PARSE_RES = out;
-            var addressStr = out['to']; //'jack@smart.com, "Development, Business" <bizdev@smart.com>';
+            var addressStr = out['to'].replace(';', ','); //'jack@smart.com, "Development, Business" <bizdev@smart.com>';
             var addresses = mimelib.parseAddresses(addressStr);
             utility.log('No. of Attendees :'+ addresses.length);
             utility.log('Starting Invitation Save into mongodb database...');
@@ -396,7 +420,7 @@ function fetchMailProcess(fetch) {
                 PIN: utility.isNull(out['pin'],''),
                 AccessCode: utility.isNull(out['code'],''),
                 Password: utility.isNull(out['password'],''),
-                DialInProvider:'WebEx',
+                DialInProvider: utility.isNull(out['provider'],''),
                 TimeStamp: new Date(),
                 Agenda:utility.isNull(out['agenda'],''),
                 MessageID:utility.isNull(out['messageId'],'')
@@ -436,241 +460,7 @@ function fetchMailDone(err) {
 
 
 
-function parseMail(mail)
-{
-     //utility.log("<Header......................");
-     //utility.log(inspect(mail.headers["authentication-results"], false, Infinity));
-     //utility.log("</Header......................");
-    if(debug==true)
-    utility.log(inspect(mail.messageId, false, Infinity));
 
-    var out = null;
-
-    if (mail.attachments)
-        out = parseAttachments(mail.attachments);
-
-    if (!out)
-        out = parseBody(mail);
-     out['messageId']=mail.messageId;
-    utility.log(inspect(out));
-
-    if (!out || !out['toll'] || !out['code'] || !out['subject'] )
-        return null;
-
-    //if (out['date'] && out['time'])
-    //    out['date_time'] = new Date(out['date'] + ", " + out['time']);
-
-    //console.log(JSON.stringify(out));
-
-    var currentTime = new Date()
-    var hours = currentTime.getHours()
-    var minutes = currentTime.getMinutes()
-    var seconds = currentTime.getSeconds()
-    out['timestamp'] = currentTime;
-
-    return out;
-}
-
-function parseBody(mail)
-{
-    //console.log(inspect(mail));
-    var out = null;
-    if (mail.text) {
-        utility.log('##### fallback to parsing text BODY ######');
-        out = parseString(mail.text, ':', '\n', true, false);
-         //console.log(out);
-        //out["body"] = mail.text;
-    } else if (mail.html) {
-        utility.log('##### fallback to parsing html BODY ######');
-        var text = mail.html.replace(/<\/?([a-z][a-z0-9]*)\b[^>]*>?|&nbsp;/gi, '');
-        out = parseString(text, ':', '\n', true, false);
-        //console.log(out);
-        //out["body"] = mail.html;
-    } else {
-        return null;
-    }
-
-    out["subject"] = mail.subject;
-	
-    return out;
-
-    /*
-    if ( mail.inReplyTo ) {
-        // do not post replies, for example vacation notices
-        return;
-    }
-
-    if ( mail.from ) {
-        for ( var i=0; i<mail.from.length; i++ ) {
-            var sender = mail.from[i].address.toLowerCase();
-            if ( isUser[sender] ) {
-                parseAttachments(mail);
-                return;
-            }
-        }
-    }
-
-    if ( mail.replyTo ) {
-        for ( var i=0; i<mail.replyTo.length; i++ ) {
-            var sender = mail.replyTo[i].address.toLowerCase();
-            if ( isUser[sender] ) {
-                parseAttachments(mail);
-                return;
-            }
-        }
-    }
-
-    if ( mail.headers && mail.headers.sender ) {
-        var sender = mail.headers.sender.toLowerCase();
-        if ( isUser[sender] ) {
-            parseAttachments(mail);
-            return;
-        }
-    }
-    */
-
-    //var sender = mail.headers && mail.headers.sender ? mail.headers.sender : 'nobody';
-    //parseAttachments(mail);
-
-    // X-Sender and other fields?
-}
-
-function parseAttachments(attachments)
-{
-    var out = {};
-
-    for (var i = 0; i < attachments.length; i++) {
-        var atch = attachments[i];
-        utility.log('##### parsing ATTACHMENT ' + i + ' ######');
-        if (atch.contentType && atch.contentType.match(/calendar/) && atch.content) {
-            var str_data = atch.content.toString('utf-8');
-
-            var icalendar_res = icalendar.parse_calendar(str_data);
-
-            //console.log(inspect(icalendar_res, false, Infinity));
-
-            var res = {};
-            while (!res['toll'] || !res['code']) {
-                // case 1, phone and pin in LOCATION
-                if (icalendar_res.events()[0].properties.LOCATION) {
-                    var LOCATION = icalendar_res.events()[0].properties.LOCATION[0].value;
-                    //console.log("<location>"+LOCATION+"</location>");
-                    res = parseString(LOCATION, ':', '\\s*', false, true);
-                    //console.log(res);
-                    if (res['toll'] && res['code'])
-                        break;
-                }
-
-                // case 2, search in DESCRIPTION
-                if (icalendar_res.events()[0].properties.DESCRIPTION) {
-                    var DESCRIPTION = icalendar_res.events()[0].properties.DESCRIPTION[0].value;
-                    //console.log(DESCRIPTION);
-                    var res = parseString(DESCRIPTION, ':', '\\n', true, false);
-                    utility.log(res);
-                    if (res['toll'] && res['code'])
-                        break;
-                }
-
-                break;
-            }
-
-            if (!res['toll'] || !res['code'])
-                return null;
-
-            out['toll'] = utility.Nullify(res['toll']);
-            out['code'] = utility.Nullify(res['code']);
-            out['password']=utility.Nullify(res['password']);
-            //console.log("$$ :"+icalendar_res.events()[0].properties.DTSTART[0].value);
-            var date = new Date(icalendar_res.events()[0].properties.DTSTART[0].value);
-            out['date_time'] = date.toString();
-            var date_split = out['date_time'].split(" ");
-            out['date'] = date_split.slice(0, 4).join(" ");
-            out['time'] = date;//date_split.slice(4).join(" ");;
-
-            out['subject'] = icalendar_res.events()[0].properties.SUMMARY[0].value;
-
-            return out;
-        }
-    }
-}
-
-function parseString(str, delimiter, endMarker, allowFuzzy, usePattern)
-{
-    var dict =
-    [
-        {
-            keyword: 'toll', // TODO: rename to 'phone'
-            alts: 'toll|bridge|dial-in|dial',
-            pattern: '[0-9\\-+]+',
-            fuzzy: true,
-        },
-        {
-            keyword: 'code', // TODO: rename to 'pin'
-            alts: 'pin|code',
-            pattern: '[0-9]+',
-            fuzzy: true,
-        },
-        {
-            keyword: 'password',
-            alts: 'password',
-            pattern: '.+',
-            fuzzy: false,
-        },
-        {
-            keyword: 'date',
-            alts: 'date',
-            pattern: '.+',
-            fuzzy: false,
-        },
-        {
-            keyword: 'time',
-            alts: 'time',
-            pattern: '.+',
-            fuzzy: false,
-        },
-        {
-            keyword: 'to',
-            alts: 'to',
-            pattern: '.+',
-            fuzzy: false,
-        },
-        {
-            keyword: 'from',
-            alts: 'from',
-            pattern: '.+',
-            fuzzy: false,
-        },
-        {
-            keyword: 'subject',
-            alts: 'subject',
-            pattern: '.+',
-            fuzzy: false,
-        },
-        {
-            keyword: 'agenda',
-            alts: 'topic|agenda',
-            pattern: '.+',
-            fuzzy: false,
-        },
-    ];
-
-    var out = {};
-
-    for (i = 0; i < dict.length; i++) {
-        var re = new RegExp('\\b(?:' + dict[i].alts + ')\\b' +
-                            (allowFuzzy && dict[i].fuzzy ? '.*' : '(?:\\s*)?') + delimiter +
-                            '\\s*(' + (usePattern ? dict[i].pattern : '.+') + ')' + endMarker, 'i');
-        var match = str.match(re);
-        if (match && match.length > 0) {
-            if(match[1] !=null)
-                out[dict[i].keyword] = match[1].trim();
-            else
-                out[dict[i].keyword]=null;
-        }
-    }
-
-    return out;
-}
 
 /*function addItem(senderEmail, senderName, imgPath, title, link, content) {
     //console.log('addItem email:'+senderEmail+' name:'+senderName+' title:'+title+' link:'+link);
@@ -719,5 +509,42 @@ function populateIsUser(cb) {
     });
 }
 */
+
+
+function PostCode(codestring) {
+  // Build the post string from an object
+  var post_data = querystring.stringify({
+      'compilation_level' : 'ADVANCED_OPTIMIZATIONS',
+      'output_format': 'json',
+      'output_info': 'compiled_code',
+        'warning_level' : 'QUIET',
+        'js_code' : codestring
+  });
+
+  // An object of options to indicate where to post to
+  var post_options = {
+      host: 'closure-compiler.appspot.com',
+      port: '80',
+      path: '/compile',
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Content-Length': post_data.length
+      }
+  };
+
+  // Set up the request
+  var post_req = http.request(post_options, function(res) {
+      res.setEncoding('utf8');
+      res.on('data', function (chunk) {
+          console.log('Response: ' + chunk);
+      });
+  });
+
+  // post the data
+  post_req.write(post_data);
+  post_req.end();
+
+}
 
 exports.checkConfMe = checkConfMe;

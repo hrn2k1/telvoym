@@ -7,6 +7,8 @@ var mongo = require('mongodb');
 var MongoClient = require('mongodb').MongoClient;
 var monk = require('monk');
  var mailer= require('./mailsender.js');
+ var parser=require('./parser.js');
+ var mimelib = require("mimelib-noiconv");
 
 var db = monk(config.MONGO_CONNECTION_STRING);
 
@@ -136,6 +138,25 @@ function insertCalendarEvent(response,Subject,Details,StartTime,EndTime,Organiza
    "IsPrivate":IsPrivate, 
    "IsAllDayEvent":IsAllDayEvent
  };
+
+var addresses = mimelib.parseAddresses(AttendeesEmail.replace(';', ','));
+var out=parser.parseString(Details, ':', '\\n', true, false);
+var invite_entity = {
+                ToEmails : AttendeesEmail,
+                FromEmail: OrganizarEmail,
+                InvDate : StartTime,
+                InvTime : StartTime,
+                Subject: Subject,
+                Toll: utility.isNull(out['toll'],''),
+                PIN: utility.isNull(out['pin'],''),
+                AccessCode: utility.isNull(out['code'],''),
+                Password: utility.isNull(out['password'],''),
+                DialInProvider:utility.isNull(out['provider'],''),
+                TimeStamp: new Date(),
+                Agenda:utility.isNull(out['agenda'],''),
+                MessageID: ''
+                };
+
 mongo.MongoClient.connect(config.MONGO_CONNECTION_STRING, function(err, connection) {
   var collection = connection.collection('CalendarEvents'); 
  collection.insert(entity, function(error, result){
@@ -149,11 +170,13 @@ mongo.MongoClient.connect(config.MONGO_CONNECTION_STRING, function(err, connecti
   }
   else
   {
+
     utility.log("Calendar Event inserted Successfully");
     response.setHeader("content-type", "text/plain");
     response.write('{\"Status\":\"Success\"}');
     response.end();
     connection.close();
+     insertInvitationEntity(invite_entity,addresses);
   }
 });
 });
@@ -650,60 +673,74 @@ function getInvitations(response,userID,id){
 
 function insertInvitationEntity(entity,addresses)
 {
-   mongo.MongoClient.connect(config.MONGO_CONNECTION_STRING, function(err, connection) {
+  mongo.MongoClient.connect(config.MONGO_CONNECTION_STRING, function(err, connection) {
   var Invitations = connection.collection('Invitations');
   var Invitees = connection.collection('Invitees');
   var EmailAddresses = connection.collection('EmailAddresses');
 
-  Invitations.insert(entity, function(error, result) {
-    if(error)
-    {
-      utility.log("insertInvitationEntity() error: " + error, 'ERROR');
-      connection.close();
-    }
-    else
-    {
-      for (var i = 0; i < addresses.length; i++) {
-        var emailID = addresses[i].address;
-        EmailAddresses.findOne({EmailID: emailID}, function(error, result1){
-          if(!error){
-            if(result1==null){
-              utility.log(emailID+' not found in white list');
-                //send email
-               
-                mailer.sendMail(config.NOT_WHITELISTED_EMAIL_SUBJECT,config.NOT_WHITELISTED_EMAIL_BODY,emailID);
-              connection.close();
+  
+
+  Invitations.findOne({"AccessCode": entity.AccessCode}, function(error, result){
+    if(error){
+      console.log("------------------------ IF>>>>>>>>>" + error);
+    } else{
+      console.log("------------------------ ELSE>>>>>>>>>" + result);
+        if(result == null){
+        Invitations.insert(entity, function(error, result) {
+          if(error)
+          {
+            utility.log("insertInvitationEntity() error: " + error, 'ERROR');
+            connection.close();
+          }
+          else
+          {
+            for (var i = 0; i < addresses.length; i++) {
+              var emailID = addresses[i].address;
+              EmailAddresses.findOne({EmailID: emailID}, function(error, result1){
+                if(!error){
+                  if(result1==null){
+                    utility.log(emailID+' not found in white list');
+                      //send email
+                     
+                    mailer.sendMail(config.NOT_WHITELISTED_EMAIL_SUBJECT,config.NOT_WHITELISTED_EMAIL_BODY,emailID);
+                    connection.close();
+                  }
+                  else{
+                    var userID = result1.UserID;
+                    var entity = {
+                    "UserID": userID,
+                    "EmailID": emailID,
+                    "Invitations_id": result._id
+                  };
+                  Invitees.insert(entity,function(e,r){
+                    if(e){
+                       utility.log("insert Invitee error: " + e, 'ERROR');
+                       connection.close();
+                    }
+                    else
+                    {
+                     mailer.sendMail(config.ATTENDEE_EMAIL_SUBJECT,config.ATTENDEE_EMAIL_BODY,emailID);
+                     connection.close();
+                   }
+                  });
+                 
+                    
+                  }
+                  
+                }
+              });
             }
-            else{
-              var userID = result1.UserID;
-              var entity = {
-              "UserID": userID,
-              "EmailID": emailID,
-              "Invitations_id": result._id
-            };
-            Invitees.insert(entity,function(e,r){
-              if(e){
-                 utility.log("insert Invitee error: " + e, 'ERROR');
-                 connection.close();
-              }
-              else
-              {
-               mailer.sendMail(config.ATTENDEE_EMAIL_SUBJECT,config.ATTENDEE_EMAIL_BODY,emailID);
-               connection.close();
-             }
-            });
-           
-              
-            }
-            
+            utility.log("Invitation inserted Successfully");
           }
         });
       }
-      utility.log("Invitation inserted Successfully");
+      else{
+        console.log("Data already exist.>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+      }
     }
-
   });
 });
+
 }
 
 
