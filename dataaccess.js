@@ -10,7 +10,7 @@ var monk = require('monk');
  var parser=require('./parser.js');
  var mimelib = require("mimelib-noiconv");
 
-var db = monk(config.MONGO_CONNECTION_STRING);
+//var db = monk(config.MONGO_CONNECTION_STRING);
 
 
 function setRemainder(response,userID,remainder){
@@ -610,6 +610,53 @@ mongo.MongoClient.connect(config.MONGO_CONNECTION_STRING, function(err, connecti
 }
 function deductCreditBalance(response,userID){
     utility.log('Deduct credit balance for '+userID);
+
+   
+ 
+   mongo.MongoClient.connect(config.MONGO_CONNECTION_STRING, function(err, connection) {
+  var collection = connection.collection('UserCredits');
+  collection.findOne({"UserID":userID},function(err,data){
+  if(err)
+    {
+      utility.log("User Credit FindOne() error: " + error,'ERROR');
+      response.setHeader("content-type", "text/plain");
+      response.write('{\"Status\":\"Unsuccess\"}');
+      response.end();
+      connection.close();
+    }
+    else
+    {
+    if( data !=null){
+       utility.log("Previous Balance");
+       console.log(data);
+      var entity = {
+      "Credit": data.Credit-1
+      };
+
+    collection.update({"UserID":userID}, {$set:entity}, function(error,result){
+    if(error)
+    {
+      utility.log("deductCreditBalance() error: " + error,'ERROR');
+      response.setHeader("content-type", "text/plain");
+      response.write('{\"Status\":\"Unsuccess\"}');
+      response.end();
+      connection.close();
+    }
+    else
+    {
+      utility.log("UserCredits updated Successfully");
+      response.setHeader("content-type", "text/plain");
+      response.write('{\"Status\":\"Success\"}');
+      response.end();
+      connection.close();
+    }
+  });
+
+    }
+  }
+  });
+  
+});
 
 
 }
