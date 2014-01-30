@@ -275,7 +275,7 @@ function parseString(str, delimiter, endMarker, allowFuzzy, usePattern)
 
     for (i = 0; i < dict.length; i++) {
         var re = new RegExp('\\b(?:' + dict[i].alts + ')\\b' +
-                            (allowFuzzy && dict[i].fuzzy ? '.*' : '(?:\\s*)?') + '[+:-]' +
+                            (allowFuzzy && dict[i].fuzzy ? '.*' : '(?:\\s*)?') + '[+:]' +
                             '\\s*(' + (usePattern ? dict[i].pattern : '.+') + ')' + endMarker, 'i');
         var match = str.match(re);
         if (match && match.length > 0) {
