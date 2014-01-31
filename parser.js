@@ -222,8 +222,14 @@ function parseString(str, delimiter, endMarker, allowFuzzy, usePattern)
             fuzzy: true,
         },
         {
-            keyword: 'code', // TODO: rename to 'pin'
-            alts: 'pin|code|meeting number',
+            keyword: 'code', // TODO: rename to 'access code'
+            alts: 'pin|code|meeting number|access code',
+            pattern: '[0-9]+',
+            fuzzy: true,
+        },
+        {
+            keyword: 'pin', // TODO: rename to 'pin'
+            alts: 'pin|secrete',
             pattern: '[0-9]+',
             fuzzy: true,
         },
