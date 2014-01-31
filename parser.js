@@ -1,6 +1,5 @@
 
 
-
 var inspect = require('util').inspect;
 var icalendar = require('icalendar');
 var config = require('./config.js');
@@ -223,7 +222,7 @@ function parseString(str, delimiter, endMarker, allowFuzzy, usePattern)
         },
         {
             keyword: 'code', // TODO: rename to 'access code'
-            alts: 'pin|code|meeting number|access code',
+            alts: 'code|meeting number|access code',
             pattern: '[0-9]+',
             fuzzy: true,
         },
