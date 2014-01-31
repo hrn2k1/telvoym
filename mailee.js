@@ -122,6 +122,14 @@ http.createServer(function(request, response) {
         dao.setRemainder(response,utility.isNull(user['userID'],''),utility.isNull(user['remainder'],10));
         
     }
+    else if(uri.toLowerCase() === "/getregister") {
+        var query = url.parse(request.url).query;
+        var user=querystring.parse(query);
+        //var u=utility.Nullify(user['u']);
+        //console.log(u);
+        dao.getRemainderTime(response,utility.isNull(user['userID'],''));
+        
+    }
     else if (uri.toLowerCase() === "/addemail") {
         var query = url.parse(request.url).query;
         var user=querystring.parse(query);

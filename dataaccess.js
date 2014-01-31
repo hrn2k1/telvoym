@@ -12,7 +12,34 @@ var monk = require('monk');
 
 //var db = monk(config.MONGO_CONNECTION_STRING);
 
-
+function getRemainderTime(response,userID)
+{
+ 
+  var entity = {
+    "UserID": userID,
+  };
+mongo.MongoClient.connect(config.MONGO_CONNECTION_STRING, function(err, connection) {
+   var collection = connection.collection('Registrations');
+  collection.findOne(entity, function(error, result) {
+    if(error)
+    {
+      utility.log("getRemainderTime() error: " + error,'ERROR');
+      response.setHeader("content-type", "text/plain");
+      response.write('{\"Status\":\"Unsuccess\"}');
+      response.end();
+      connection.close();
+    }
+    else
+    {
+      utility.log(result);
+      response.setHeader("content-type", "text/plain");
+      response.write(JSON.stringify(result));
+      response.end();
+      connection.close();
+    }
+  });
+});
+}
 function setRemainder(response,userID,remainder){
  
   
@@ -686,26 +713,26 @@ function getInvitations(response,userID,id){
 
           var Invitations_ids = [];
           for (var i = 0; i < result.length; i++) {
-          Invitations_ids.push(result[i].Invitations_id);
+            Invitations_ids.push(result[i].Invitations_id);
           };
 
-          Invitations.find({ _id: { $in : Invitations_ids}}).toArray(
+          Invitations.find({ _id: {$in : Invitations_ids}, InvTime : {$gte : new Date()}}).toArray(
           function (error, result) {
           if(error)
           {
-          utility.log("Invitations find error: " + error,'ERROR');
-          response.setHeader("content-type", "text/plain");
-          response.write('{\"Status\":\"Unsuccess\"}');
-          response.end();
-          connection.close();
+            utility.log("Invitations find error: " + error,'ERROR');
+            response.setHeader("content-type", "text/plain");
+            response.write('{\"Status\":\"Unsuccess\"}');
+            response.end();
+            connection.close();
           }
           else
           {
-          utility.log(result);
-          response.setHeader("content-type", "text/plain");
-          response.write("{\"invitations\":"+JSON.stringify(result)+"}");
-          response.end();
-          connection.close();
+            utility.log(result);
+            response.setHeader("content-type", "text/plain");
+            response.write("{\"invitations\":"+JSON.stringify(result)+"}");
+            response.end();
+            connection.close();
           }
 
           });
@@ -727,12 +754,12 @@ function insertInvitationEntity(entity,addresses)
 
   
 
-  Invitations.findOne({"AccessCode": entity.AccessCode}, function(error, result){
+  Invitations.findOne({"AccessCode": entity.AccessCode}, function(error, result_invite){
     if(error){
       console.log("------------------------ IF>>>>>>>>>" + error);
     } else{
-      console.log("------------------------ ELSE>>>>>>>>>" + result);
-        if(result == null){
+      console.log("------------------------ ELSE>>>>>>>>>" + result_invite);
+        if(result_invite == null){
         Invitations.insert(entity, function(error, result) {
           if(error)
           {
@@ -741,33 +768,38 @@ function insertInvitationEntity(entity,addresses)
           }
           else
           {
+            console.log('insert invitation result.........||');
+            console.log(result);
+            utility.log("Invitation inserted Successfully");
             for (var i = 0; i < addresses.length; i++) {
-              var emailID = addresses[i].address;
-              EmailAddresses.findOne({EmailID: emailID}, function(error, result1){
+              //var emailID = addresses[i].address;
+              EmailAddresses.findOne({EmailID: addresses[i].address}, function(error, result1){
                 if(!error){
                   if(result1==null){
-                    utility.log(emailID+' not found in white list');
+                    utility.log(result1.EmailID+' not found in white list');
                       //send email
                      
-                    mailer.sendMail(config.NOT_WHITELISTED_EMAIL_SUBJECT,config.NOT_WHITELISTED_EMAIL_BODY,emailID);
-                    connection.close();
+                    mailer.sendMail(config.NOT_WHITELISTED_EMAIL_SUBJECT,config.NOT_WHITELISTED_EMAIL_BODY,result1.EmailID);
+                  
                   }
                   else{
-                    var userID = result1.UserID;
+                    //var userID = result1.UserID;
                     var entity = {
-                    "UserID": userID,
-                    "EmailID": emailID,
-                    "Invitations_id": result._id
+                    "UserID": result1.UserID,
+                    "EmailID": result1.EmailID,
+                    "Invitations_id": result[0]._id
                   };
+                   console.log('invitee object to insert');
+                   console.log(entity);
                   Invitees.insert(entity,function(e,r){
                     if(e){
                        utility.log("insert Invitee error: " + e, 'ERROR');
-                       connection.close();
+                       //connection.close();
                     }
                     else
                     {
-                     mailer.sendMail(config.ATTENDEE_EMAIL_SUBJECT,config.ATTENDEE_EMAIL_BODY,emailID);
-                     connection.close();
+                     mailer.sendMail(config.ATTENDEE_EMAIL_SUBJECT,config.ATTENDEE_EMAIL_BODY,result1.EmailID);
+                     //connection.close();
                    }
                   });
                  
@@ -777,12 +809,13 @@ function insertInvitationEntity(entity,addresses)
                 }
               });
             }
-            utility.log("Invitation inserted Successfully");
+            //connection.close();  
+            
           }
         });
       }
       else{
-        console.log("Data already exist.>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+        console.log("Invitation already exist.");
       }
     }
   });
@@ -959,4 +992,4 @@ exports.deleteDialInNumber=deleteDialInNumber;
 exports.insertCalendarEvent=insertCalendarEvent;
 exports.insertPushURL=insertPushURL;
 exports.setRemainder=setRemainder;
-//exports.mongotestm=mongotestm;
+exports.getRemainderTime=getRemainderTime;
