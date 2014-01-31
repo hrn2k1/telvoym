@@ -829,18 +829,23 @@ function insertInvitationEntity(entity,addresses)
 function addMinutes(date, minutes) {
   return new Date(date.getTime() + minutes*60000);
 }
-
+function minutesDiff(start, end){
+  var diff = start.getTime() - end.getTime(); // this is a time in milliseconds
+  return parseInt(diff/(1000*60));
+}
 
 /// Method to send/push notification to MPNS
 
 function PushNotification(notificationRemainderTime)
 {
 
+
   mongo.MongoClient.connect(config.MONGO_CONNECTION_STRING, function(err, connection) {
 
   var Invitations = connection.collection('Invitations');
   var Invitees = connection.collection('Invitees');
   var Registrations = connection.collection('Registrations');
+  
   var sttime = new Date(); // addMinutes(new Date(), -99999999);
   //console.log(sttime);
   // var edtime = addMinutes(new Date(), notificationRemainderTime/(1000*60));
@@ -852,7 +857,7 @@ function PushNotification(notificationRemainderTime)
       $lte: edtime
     }
   }
-
+ 
   Invitations.find(invtime).toArray( function(error, invites) {
     if(error)
     {
@@ -861,7 +866,8 @@ function PushNotification(notificationRemainderTime)
     }
     else
     {
-
+      utility.log("eligible invitations for push");
+      console.log(invites);
       var pushInfo = [];
       for (var i = 0; i < invites.length; i++) {
          
@@ -878,7 +884,9 @@ function PushNotification(notificationRemainderTime)
             }
             else
             {
-              
+              utility.log("eligible invitees for push");
+              console.log(invitees);
+
               for (var j = 0; j < invitees.length; j++) {
                 
                 pushInfo["UserID"] = invitees[j].UserID;
@@ -891,14 +899,19 @@ function PushNotification(notificationRemainderTime)
                   }
                   else
                   {
+                    utility.log('Invitees Push URL Info' );
+                    console.log(registrations);
                     // console.log("Inv ID: "+invites[i]._id);
                     // console.log(invitees[j]);
                     // console.log(registrations); RemainderMinute
                     if(registrations != null)
                     {
+
+                        //console.log(pushInfo);
                       var RemainderMinute = registrations.RemainderMinute;
-                      var md = minutesDiff(new Date(), pushInfo["InvTime"]);
-                      console.log(md);
+                      var md = minutesDiff( pushInfo["InvTime"],new Date());
+                      utility.log("meeting remaining minute: "+md);
+                      //console.log(md);
                       if(md <= RemainderMinute){
                         pushInfo["PushUrl"] = registrations.Handle;
                         var tileObj = {
@@ -909,7 +922,7 @@ function PushNotification(notificationRemainderTime)
                                   };
                         mpns.sendTile(pushInfo["PushUrl"], tileObj, function(){utility.log('Pushed to ' + pushInfo["UserID"]);});
                       }
-                      connection.close();
+                      //connection.close();
                     } 
                     // else {
                     //   pushInfo["PushUrl"] =null;
