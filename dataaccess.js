@@ -756,11 +756,11 @@ function insertInvitationEntity(entity,addresses)
 
   Invitations.findOne({"AccessCode": entity.AccessCode}, function(error, result_invite){
     if(error){
-      console.log("------------------------ IF>>>>>>>>>" + error);
+      console.log("Error in find invitation with AccessCode to check duplicate" + error);
     } else{
-      console.log("------------------------ ELSE>>>>>>>>>" + result_invite);
+      //console.log("Invitation  found nor" + result_invite);
         if(result_invite == null){
-        Invitations.insert(entity, function(error, result) {
+         Invitations.insert(entity, function(error, result) {
           if(error)
           {
             utility.log("insertInvitationEntity() error: " + error, 'ERROR');
@@ -786,7 +786,7 @@ function insertInvitationEntity(entity,addresses)
                     //var userID = result1.UserID;
                     var entity = {
                     "UserID": result1.UserID,
-                    "EmailID": result1.EmailID,
+                    "EmailID": addresses[i].address,
                     "Invitations_id": result[0]._id
                   };
                    console.log('invitee object to insert');
@@ -815,7 +815,7 @@ function insertInvitationEntity(entity,addresses)
         });
       }
       else{
-        console.log("Invitation already exist.");
+        console.log("Invitation already exist for AccessCode: "+entity.AccessCode);
       }
     }
   });
@@ -832,7 +832,112 @@ function addMinutes(date, minutes) {
 
 
 /// Method to send/push notification to MPNS
+
 function PushNotification(notificationRemainderTime)
+{
+
+  mongo.MongoClient.connect(config.MONGO_CONNECTION_STRING, function(err, connection) {
+
+  var Invitations = connection.collection('Invitations');
+  var Invitees = connection.collection('Invitees');
+  var Registrations = connection.collection('Registrations');
+  var sttime = new Date(); // addMinutes(new Date(), -99999999);
+  //console.log(sttime);
+  // var edtime = addMinutes(new Date(), notificationRemainderTime/(1000*60));
+  var edtime = addMinutes(new Date(), (12*60));
+  //console.log(edtime);
+  var invtime = {
+    InvTime: {
+      $gte: sttime,
+      $lte: edtime
+    }
+  }
+
+  Invitations.find(invtime).toArray( function(error, invites) {
+    if(error)
+    {
+      utility.log("find Invitations error: " + error, 'ERROR');
+      connection.close();
+    }
+    else
+    {
+
+      var pushInfo = [];
+      for (var i = 0; i < invites.length; i++) {
+         
+        pushInfo["Subject"] = invites[i].Subject;
+        pushInfo["Agenda"] = invites[i].Agenda;
+        pushInfo["InvTime"] = invites[i].InvTime;
+
+          // Invitations_ids.push(invites[i]._id);
+          Invitees.find({Invitations_id: invites[i]._id}).toArray( function(error, invitees) {
+            if(error)
+            {
+              utility.log("find Invitees error: " + error, 'ERROR');
+              connection.close();
+            }
+            else
+            {
+              
+              for (var j = 0; j < invitees.length; j++) {
+                
+                pushInfo["UserID"] = invitees[j].UserID;
+
+                Registrations.findOne({UserID: invitees[j].UserID.trim()}, function(error, registrations) {
+                  if(error)
+                  {
+                    utility.log("find registration error: " + error, 'ERROR');
+                    connection.close();
+                  }
+                  else
+                  {
+                    // console.log("Inv ID: "+invites[i]._id);
+                    // console.log(invitees[j]);
+                    // console.log(registrations); RemainderMinute
+                    if(registrations != null)
+                    {
+                      var RemainderMinute = registrations.RemainderMinute;
+                      var md = minutesDiff(new Date(), pushInfo["InvTime"]);
+                      console.log(md);
+                      if(md <= RemainderMinute){
+                        pushInfo["PushUrl"] = registrations.Handle;
+                        var tileObj = {
+                                  'title': pushInfo["Subject"],
+                                  'backTitle': "Next Conference",
+                                  'backBackgroundImage': "/Assets/Tiles/BackTileBackground.png",
+                                  'backContent': pushInfo["Agenda"]
+                                  };
+                        mpns.sendTile(pushInfo["PushUrl"], tileObj, function(){utility.log('Pushed to ' + pushInfo["UserID"]);});
+                      }
+                      connection.close();
+                    } 
+                    // else {
+                    //   pushInfo["PushUrl"] =null;
+                    //   utility.log("Can't find push URL for "+pushInfo["UserID"]+" . so can't push notification.",'WARNING');
+                    // }
+                    // console.log(pushInfo);
+
+                  }
+                });
+              }
+            }
+          });
+          
+        }
+        //return JSON.stringify(result);
+        // response.setHeader("content-type", "text/plain";
+        // response.write("{\"Tolls\":" + JSON.stringify(result.Toll) + "}";
+        // response.end();
+      }
+    });
+});
+}
+
+
+
+
+
+function PushNotification_back(notificationRemainderTime)
 {
 
 mongo.MongoClient.connect(config.MONGO_CONNECTION_STRING, function(err, connection) {
