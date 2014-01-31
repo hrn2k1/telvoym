@@ -786,7 +786,7 @@ function insertInvitationEntity(entity,addresses)
                     //var userID = result1.UserID;
                     var entity = {
                     "UserID": result1.UserID,
-                    "EmailID": addresses[i].address,
+                    "EmailID": result1.EmailID,
                     "Invitations_id": result[0]._id
                   };
                    console.log('invitee object to insert');
