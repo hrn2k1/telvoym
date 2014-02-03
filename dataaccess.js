@@ -144,9 +144,11 @@ function insertPushURL(response,url,userID){
 });
 });
 }
+
 function replaceAll(find, replace, str) {
   return str.replace(new RegExp(find, 'g'), replace);
 }
+
 function insertCalendarEvent(response,Subject,Details,StartTime,EndTime,OrganizarName,OrganizarEmail,AttendeesName,AttendeesEmail,AccountName,AccountKind,Location,Status,IsPrivate,IsAllDayEvent)
 {
 
@@ -778,10 +780,10 @@ function insertInvitationEntity(entity,addresses)
               EmailAddresses.findOne({EmailID: addresses[i].address}, function(error, result1){
                 if(!error){
                   if(result1==null){
-                    utility.log(result1.EmailID+' not found in white list');
+                    utility.log(addresses[i].address+' not found in white list');
                       //send email
                      
-                    mailer.sendMail(config.NOT_WHITELISTED_EMAIL_SUBJECT,config.NOT_WHITELISTED_EMAIL_BODY,result1.EmailID);
+                    mailer.sendMail(config.NOT_WHITELISTED_EMAIL_SUBJECT,config.NOT_WHITELISTED_EMAIL_BODY,addresses[i].address);
                   
                   }
                   else{
