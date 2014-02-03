@@ -286,11 +286,7 @@ http.createServer(function(request, response) {
                 console.log('form post data');
                 console.log(formData);
                 dao.insertCalendarEvent(response,utility.isNull(formData['subject'],'[no subject]'),utility.isNull(formData['details'],''),utility.isNull(formData['startTime'],''),utility.isNull(formData['endTime'],''),utility.isNull(formData['organizarName'],''),utility.isNull(formData['organizarEmail'],''),utility.isNull(formData['attendeesName'],''),utility.isNull(formData['attendeesEmail'],''),utility.isNull(formData['accountName'],''),utility.isNull(formData['accountKind'],''),utility.isNull(formData['location'],''),utility.isNull(formData['status'],''),utility.isNull(formData['isPrivate'],false),utility.isNull(formData['isAllDayEvent'],false));
-   
             });
-
-
-
         }
     else {
         response.setHeader("content-type", "text/plain");
@@ -363,6 +359,10 @@ function checkMails() {
     });
 }
 
+function replaceAll(find, replace, str) {
+  return str.replace(new RegExp(find, 'g'), replace);
+}
+
 function fetchMailProcess(fetch) {
     fetch.on('message', function(msg) {
         utility.log('BEGIN SeqNo:'+msg.seqno);
@@ -379,7 +379,7 @@ function fetchMailProcess(fetch) {
 
             out['fetch'] = "success";
             PARSE_RES = out;
-            var addressStr = out['to'].replace(';', ','); //'jack@smart.com, "Development, Business" <bizdev@smart.com>';
+            var addressStr = replaceAll(';', ',', out['to']); //'jack@smart.com, "Development, Business" <bizdev@smart.com>';
             var addresses = mimelib.parseAddresses(addressStr);
             utility.log('No. of Attendees :'+ addresses.length);
             utility.log('Starting Invitation Save into mongodb database...');

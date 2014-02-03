@@ -144,7 +144,9 @@ function insertPushURL(response,url,userID){
 });
 });
 }
-
+function replaceAll(find, replace, str) {
+  return str.replace(new RegExp(find, 'g'), replace);
+}
 function insertCalendarEvent(response,Subject,Details,StartTime,EndTime,OrganizarName,OrganizarEmail,AttendeesName,AttendeesEmail,AccountName,AccountKind,Location,Status,IsPrivate,IsAllDayEvent)
 {
 
@@ -166,7 +168,7 @@ function insertCalendarEvent(response,Subject,Details,StartTime,EndTime,Organiza
    "IsAllDayEvent":IsAllDayEvent
  };
 
-var addresses = mimelib.parseAddresses(AttendeesEmail.replace(';', ','));
+var addresses = mimelib.parseAddresses(replaceAll(';', ',', AttendeesEmail));
 var out=parser.parseString(Details, ':', '\\n', true, false);
 var invite_entity = {
                 ToEmails : AttendeesEmail,
